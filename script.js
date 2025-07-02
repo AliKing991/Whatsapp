@@ -1,13 +1,21 @@
 // Firebase configuration
-const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    databaseURL: "YOUR_DATABASE_URL",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-};
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyBEnL-jzxZ89rT9vdqHHNcgjSrFXtGz6ho",
+    authDomain: "whats-app-4f3d7.firebaseapp.com",
+    projectId: "whats-app-4f3d7",
+    storageBucket: "whats-app-4f3d7.firebasestorage.app",
+    messagingSenderId: "932188834949",
+    appId: "1:932188834949:web:2c73cf9c6ec1d8e587adec",
+    measurementId: "G-JR5G402M8E"
+  };
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
@@ -17,7 +25,7 @@ const storage = firebase.storage();
 const usersRef = database.ref('users');
 const messagesRef = database.ref('messages');
 
-const submitUser Button = document.getElementById('submitUser ');
+const submitUser Button = document.getElementById('submitUser');
 const displayNameInput = document.getElementById('displayName');
 const profilePicInput = document.getElementById('profilePic');
 const usersList = document.getElementById('users');
