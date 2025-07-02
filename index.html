@@ -4,36 +4,100 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat App</title>
-    <link rel="stylesheet" href="style.css"> 
+    <link rel="stylesheet" href="style.css">
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js" defer></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js" defer></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-storage-compat.js" defer></script>
 </head>
 <body>
-    <div class="container">
-        <div class="user-form">
-            <h2>Enter Your Name</h2>
-            <input type="text" id="displayName" placeholder="Display Name" required>
-            <input type="file" id="profilePic" accept="image/*" required>
-            <button id="submitUser">Join Chat</button>
+    <div class="app-container">
+        <!-- Login Screen -->
+        <div class="login-screen">
+            <div class="login-container">
+                <img src="assets/whatsapp-logo.png" alt="WhatsApp Logo" class="logo">
+                <h1>Welcome to WhatsApp Web</h1>
+                <p class="subtitle">Send and receive messages without keeping your phone online</p>
+                <div class="login-form">
+                    <div class="profile-upload">
+                        <label for="profilePic" id="profileLabel">
+                            <img src="assets/default-profile.png" id="profilePreview">
+                            <span>+</span>
+                        </label>
+                        <input type="file" id="profilePic" accept="image/*" hidden required>
+                    </div>
+                    <input type="text" id="displayName" placeholder="Enter your name" required>
+                    <button id="submitUser" class="whatsapp-btn">
+                        <i class="fas fa-chevron-right"></i> Continue
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <div class="chat-container">
-            <div class="user-list">
-                <h3>Users</h3>
-                <ul id="users"></ul>
+        <!-- Chat Interface -->
+        <div class="chat-interface" style="display:none;">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <div class="user-profile">
+                        <img id="currentUserAvatar" src="assets/default-profile.png">
+                        <span id="currentUserName">You</span>
+                    </div>
+                    <div class="sidebar-actions">
+                        <button><i class="fas fa-users"></i></button>
+                        <button><i class="fas fa-comment-dots"></i></button>
+                        <button><i class="fas fa-ellipsis-v"></i></button>
+                    </div>
+                </div>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search or start new chat">
+                </div>
+                <div class="contacts-list" id="users">
+                    <!-- Contacts will be populated here -->
+                </div>
             </div>
-            <div class="chat-area">
-                <div id="chatHeader" class="chat-header"></div>
-                <div id="messages" class="messages"></div>
-                <div class="message-input">
-                    <input type="text" id="messageInput" placeholder="Type a message..." disabled>
-                    <button id="sendMessage" disabled>Send</button>
+
+            <!-- Main Chat -->
+            <div class="main-chat">
+                <div id="chatHeader" class="chat-header">
+                    <div class="chat-partner">
+                        <img id="chatPartnerAvatar">
+                        <div>
+                            <h3 id="chatPartnerName">WhatsApp Web</h3>
+                            <p class="status">Click on a contact to start chatting</p>
+                        </div>
+                    </div>
+                    <div class="chat-actions">
+                        <button><i class="fas fa-search"></i></button>
+                        <button><i class="fas fa-paperclip"></i></button>
+                        <button><i class="fas fa-ellipsis-v"></i></button>
+                    </div>
+                </div>
+                
+                <div id="messages" class="message-area">
+                    <!-- Messages will appear here -->
+                </div>
+                
+                <div class="message-composer">
+                    <div class="composer-actions">
+                        <button><i class="far fa-smile"></i></button>
+                        <button><i class="fas fa-paperclip"></i></button>
+                    </div>
+                    <input type="text" 
+                           id="messageInput" 
+                           placeholder="Type a message..."
+                           disabled>
+                    <button id="sendMessage" disabled>
+                        <i class="fas fa-microphone"></i>
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-     <script src="script.js" defer></script>
+    <!-- Icons -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+   
+    <script src="script.js" defer></script>
 </body>
 </html>
