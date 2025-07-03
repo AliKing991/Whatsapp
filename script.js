@@ -92,7 +92,6 @@ function openChat(user) {
   messageInput.disabled = false;
   sendMessageBtn.disabled = false;
 
-  chatHeaderStatus.textContent = "Typing..." // default, will update below
   statusRef.child(user.displayName).on("value", (snap) => {
     const val = snap.val();
     if (val === "online") chatHeaderStatus.textContent = "Online";
@@ -104,13 +103,11 @@ function openChat(user) {
   loadMessages();
 }
 
-// Chat ID
 function getChatId(user1, user2) {
   if (!user1 || !user2) return "invalid";
   return [user1.displayName, user2.displayName].sort().join("_");
 }
 
-// Load messages
 function loadMessages() {
   const chatId = getChatId(currentUser, currentChatUser);
   messagesRef.child(chatId).on("value", (snap) => {
@@ -122,7 +119,6 @@ function loadMessages() {
   });
 }
 
-// Display message
 function displayMessage(msg, id) {
   const div = document.createElement("div");
   div.className = "message " + (msg.sender === currentUser.displayName ? "outgoing" : "incoming");
@@ -132,7 +128,6 @@ function displayMessage(msg, id) {
   markAsRead(id);
 }
 
-// Send message
 sendMessageBtn.addEventListener("click", async () => {
   const text = messageInput.value.trim();
   if (!text || !currentChatUser) return;
@@ -149,7 +144,6 @@ sendMessageBtn.addEventListener("click", async () => {
   messageInput.value = "";
 });
 
-// Typing indicator
 messageInput.addEventListener("input", () => {
   const typing = messageInput.value.trim().length > 0;
   statusRef.child(currentUser.displayName).set({ typing });
@@ -159,14 +153,12 @@ messageInput.addEventListener("input", () => {
   }, 2000);
 });
 
-// Mark as read
 function markAsRead(msgId) {
   if (!currentChatUser) return;
   const chatId = getChatId(currentUser, currentChatUser);
   messagesRef.child(chatId).child(msgId).update({ read: true });
 }
 
-// Edit Username
 document.getElementById("saveNameBtn").addEventListener("click", async () => {
   const newName = document.getElementById("newNameInput").value.trim();
   const oldName = currentUser.displayName;
@@ -176,7 +168,13 @@ document.getElementById("saveNameBtn").addEventListener("click", async () => {
   const exists = (await usersRef.child(newName).get()).exists();
   if (exists) return alert("Username already taken.");
 
-  await usersRef.child(newName).set({ displayName: newName, photoURL: currentUser.photoURL });
+  const user = {
+    displayName: newName,
+    photoURL: currentUser.photoURL,
+    lastSeen: Date.now(),
+  };
+
+  await usersRef.child(newName).set(user);
   await usersRef.child(oldName).remove();
 
   const allMsgs = await messagesRef.get();
@@ -198,7 +196,6 @@ document.getElementById("saveNameBtn").addEventListener("click", async () => {
   listenForUsers();
 });
 
-// Toggle Settings Menu
 document.addEventListener("click", (e) => {
   const settingsMenu = document.getElementById("settingsMenu");
   const settingsBtn = document.getElementById("settingsBtn");
@@ -209,19 +206,16 @@ document.addEventListener("click", (e) => {
   }
 });
 
-// Toggle Edit Username Box
 document.getElementById("editNameTrigger").addEventListener("click", () => {
   const box = document.getElementById("editNameBox");
   box.style.display = box.style.display === "block" ? "none" : "block";
   document.getElementById("settingsMenu").style.display = "none";
 });
 
-// Dark Mode Toggle
 document.getElementById("toggleDark").addEventListener("click", () => {
   document.body.classList.toggle("dark-mode");
 });
 
-// Cleanup on unload
 window.addEventListener("beforeunload", () => {
   if (currentUser?.displayName) {
     statusRef.child(currentUser.displayName).set({ lastSeen: Date.now() });
