@@ -261,9 +261,9 @@ body.dark-mode {
 #settingsMenu {
   display: none;
   position: absolute;
-  right: 0;
-  top: 100%;
-  background: white;
+  left: 0;
+  top: 0;
+  background: #bec6ff24;
   border: 1px solid #ccc;
   z-index: 999;
   border-radius: 5px;
@@ -274,7 +274,7 @@ body.dark-mode {
   width: 100%;
   padding: 10px;
   border: none;
-  background: white;
+  background: transparent;
   text-align: left;
 }
 
