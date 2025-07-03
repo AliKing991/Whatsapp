@@ -139,3 +139,44 @@ sendMessageButton.addEventListener("click", () => {
       console.error("❌ Message send error:", error);
     });
 });
+
+
+
+ document.getElementById("settingsBtn").addEventListener("click", () => {
+      const menu = document.getElementById("settingsMenu");
+      menu.style.display = menu.style.display === "block" ? "none" : "block";
+    });
+
+    // Show input
+    document.getElementById("editNameTrigger").addEventListener("click", () => {
+      document.getElementById("editNameBox").style.display = "block";
+      document.getElementById("newNameInput").value = currentUser.displayName;
+      document.getElementById("settingsMenu").style.display = "none";
+    });
+
+    // Save new username
+    document.getElementById("saveNameBtn").addEventListener("click", async () => {
+      const newName = document.getElementById("newNameInput").value.trim();
+      const oldName = currentUser.displayName;
+
+      if (!newName || newName === oldName) {
+        alert("Please enter a different name.");
+        return;
+      }
+
+      const snapshot = await usersRef.child(newName).get();
+      if (snapshot.exists()) {
+        alert("This name already exists.");
+        return;
+      }
+
+      await usersRef.child(newName).set({ displayName: newName });
+      await usersRef.child(oldName).remove();
+
+      currentUser.displayName = newName;
+      document.getElementById("currentUserName").textContent = newName;
+      document.getElementById("editNameBox").style.display = "none";
+      loadUsers();
+
+      alert("Username updated successfully!");
+    });
