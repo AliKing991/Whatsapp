@@ -24,24 +24,29 @@ const sendMessageButton = document.getElementById("sendMessage");
 let currentUser = null;
 let currentChatUser = null;
 
-// Join chat (no image, simple name only)
+// 🔐 Login or Register
 submitUserButton.addEventListener("click", async () => {
   const displayName = displayNameInput.value.trim();
-  if (displayName) {
+  if (!displayName) return;
+
+  const userSnapshot = await usersRef.child(displayName).get();
+  if (userSnapshot.exists()) {
+    // ✅ Existing user — login
+    currentUser = userSnapshot.val();
+  } else {
+    // 🆕 New user — register
     currentUser = { displayName };
-    await usersRef.child(displayName).set({ displayName });
-
-    document.getElementById("currentUserName").textContent = displayName;
-    displayNameInput.value = "";
-
-    document.querySelector(".login-screen").style.display = "none";
-    document.querySelector(".chat-interface").style.display = "flex";
-
-    loadUsers();
+    await usersRef.child(displayName).set(currentUser);
   }
+
+  document.getElementById("currentUserName").textContent = currentUser.displayName;
+  displayNameInput.value = "";
+  document.querySelector(".login-screen").style.display = "none";
+  document.querySelector(".chat-interface").style.display = "flex";
+  loadUsers();
 });
 
-// Load users
+// 📥 Load all other users
 function loadUsers() {
   usersRef.on("value", (snapshot) => {
     usersList.innerHTML = "";
@@ -57,21 +62,19 @@ function loadUsers() {
   });
 }
 
-// Open chat with another user
+// 📤 Open chat with selected user
 function openChat(user) {
   currentChatUser = user;
-
   document.getElementById("chatPartnerName").textContent = user.displayName;
   chatHeader.querySelector(".status").textContent = "Online";
 
   messagesContainer.innerHTML = "";
   messageInput.disabled = false;
   sendMessageButton.disabled = false;
-
   loadMessages();
 }
 
-// Load messages between two users
+// 🔄 Load messages from database
 function loadMessages() {
   const chatId = getChatId(currentUser, currentChatUser);
   if (chatId === "invalid_chat_id") return;
@@ -85,16 +88,16 @@ function loadMessages() {
   });
 }
 
-// Generate a unique chat ID that’s same for both users
+// 🔑 Create unique chat ID for both users
 function getChatId(user1, user2) {
   if (!user1 || !user2 || !user1.displayName || !user2.displayName) {
-    console.error("❌ Chat ID Error: Missing user info", user1, user2);
+    console.error("❌ Chat ID Error:", user1, user2);
     return "invalid_chat_id";
   }
   return [user1.displayName, user2.displayName].sort().join("_");
 }
 
-// Display message in the chat container
+// 💬 Display single message in UI
 function displayMessage(message) {
   const messageDiv = document.createElement("div");
   messageDiv.classList.add("message");
@@ -109,7 +112,7 @@ function displayMessage(message) {
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// Send message on button click
+// 📤 Send message
 sendMessageButton.addEventListener("click", () => {
   const messageText = messageInput.value.trim();
   if (!messageText) return;
@@ -140,6 +143,8 @@ sendMessageButton.addEventListener("click", () => {
     });
 });
 
+
+// ✏️ Edit Username & Move Chats
 document.getElementById("saveNameBtn").addEventListener("click", async () => {
   const newName = document.getElementById("newNameInput").value.trim();
   const oldName = currentUser.displayName;
@@ -159,7 +164,7 @@ document.getElementById("saveNameBtn").addEventListener("click", async () => {
   await usersRef.child(newName).set({ displayName: newName });
   await usersRef.child(oldName).remove();
 
-  // Step 2: Move messages
+  // Step 2: Migrate messages
   const allMessagesSnapshot = await messagesRef.get();
   const updates = {};
 
@@ -176,11 +181,11 @@ document.getElementById("saveNameBtn").addEventListener("click", async () => {
 
   await messagesRef.update(updates);
 
-  // Step 3: Update local user + UI
+  // Step 3: Update local + UI
   currentUser.displayName = newName;
   document.getElementById("currentUserName").textContent = newName;
   document.getElementById("editNameBox").style.display = "none";
   loadUsers();
 
-  alert("Username updated & chats preserved!");
+  alert("✅ Username updated & chats preserved!");
 });
