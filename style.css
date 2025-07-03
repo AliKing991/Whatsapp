@@ -34,7 +34,10 @@ body {
   background-color: #1e1e1e;
   color: var(--text-light);
 }
-
+#chatPartnerAvatar{
+    width: 80px;
+    border-radius: 50%;
+}
 .app-container {
   display: flex;
   height: 100vh;
