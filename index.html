@@ -1,97 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat App</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js" defer></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js" defer></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-storage-compat.js" defer></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chat App</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-storage-compat.js" defer></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
 </head>
 <body>
-    <div class="app-container">
-        <!-- Login Screen -->
-        <div class="login-screen">
-            <div class="login-container">
-                <img src="assets/whatsapp.png" alt="WhatsApp Logo" class="logo">
-                <h1>Welcome to WhatsApp Web</h1>
-                <p class="subtitle">Send and receive messages without keeping your phone online</p>
-                <div class="login-form">
-                    <div class="profile-upload">
-                        <label for="profilePic" id="profileLabel">
-                            <img src="assets/unnamed.webp" id="profilePreview">
-                            <span>+</span>
-                        </label>
-                        <input type="file" id="profilePic" accept="image/*" hidden>
-                    </div>
-                    <input type="text" id="displayName" style="height: 24px; padding: 3px; font-size: 17px;" placeholder="Enter your name" required>
-                    <button id="submitUser" class="whatsapp-btn">
-                        <i class="fas fa-chevron-right"></i> Continue
-                    </button>
-                </div>
-            </div>
+  <div class="app-container">
+    <!-- Login Screen -->
+    <div class="login-screen">
+      <div class="login-container">
+        <img src="assets/whatsapp.png" alt="WhatsApp Logo" class="logo" />
+        <h1>Welcome to WhatsApp Web</h1>
+        <p class="subtitle">Send and receive messages without keeping your phone online</p>
+        <div class="login-form">
+          <div class="profile-upload">
+            <label for="profilePic" id="profileLabel">
+              <img src="assets/unnamed.webp" id="profilePreview"/>
+              <span>+</span>
+            </label>
+            <input type="file" id="profilePic" accept="image/*" hidden />
+          </div>
+          <input type="text" id="displayName" style="height: 24px; padding: 3px; font-size: 17px;" placeholder="Enter your name" required />
+          <button id="submitUser" class="whatsapp-btn">
+            <i class="fas fa-chevron-right"></i> Continue
+          </button>
         </div>
-
-        <!-- Chat Interface -->
-        <div class="chat-interface" style="display:none;">
-            <div class="sidebar">
-                <div class="sidebar-header">
-                    <div class="user-profile">
-                        <img id="currentUserAvatar" src="assets/unnamed.webp">
-                        <span id="currentUserName">You</span>
-                    </div>
-                    <div class="sidebar-actions">
-                        <button><i class="fas fa-users"></i></button>
-                        <button><i class="fas fa-comment-dots"></i></button>
-                        <button><i class="fas fa-ellipsis-v"></i></button>
-                    </div>
-                </div>
-                <div class="search-bar">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search or start new chat">
-                </div>
-                <div class="contacts-list" id="users">
-                    <!-- Contacts will be populated here -->
-                </div>
-            </div>
-
-            <div class="main-chat">
-                <div id="chatHeader" class="chat-header">
-                    <div class="chat-partner">
-                        <img id="chatPartnerAvatar">
-                        <div>
-                            <h3 id="chatPartnerName">WhatsApp Web</h3>
-                            <p class="status">Click on a contact to start chatting</p>
-                        </div>
-                    </div>
-                    <div class="chat-actions">
-                        <button><i class="fas fa-search"></i></button>
-                        <button><i class="fas fa-paperclip"></i></button>
-                        <button><i class="fas fa-ellipsis-v"></i></button>
-                    </div>
-                </div>
-
-                <div id="messages" class="message-area">
-                    <!-- Messages will appear here -->
-                </div>
-
-                <div class="message-composer">
-                    <div class="composer-actions">
-                        <button><i class="far fa-smile"></i></button>
-                        <button><i class="fas fa-paperclip"></i></button>
-                    </div>
-                    <input type="text" id="messageInput" placeholder="Type a message..." disabled>
-                    <button id="sendMessage" disabled>
-                        <i class="fas fa-microphone"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
 
-    <!-- Icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <script src="script.js" defer></script>
+    <!-- Chat Interface -->
+    <div class="chat-interface" style="display: none;">
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <div class="user-profile">
+            <img id="currentUserAvatar" src="assets/unnamed.webp" />
+            <span id="currentUserName">You</span>
+          </div>
+          <div class="sidebar-actions">
+            <button><i class="fas fa-users"></i></button>
+            <button><i class="fas fa-comment-dots"></i></button>
+            <!-- Settings Dropdown with Edit Username -->
+            <div class="settings-dropdown">
+              <button id="settingsBtn"><i class="fas fa-ellipsis-v"></i></button>
+              <div id="settingsMenu">
+                <button id="editNameTrigger" style="width: 100%; padding: 8px; border: none; background: white; text-align: left;">✏️ Edit Username</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Edit Username Box -->
+        <div id="editNameBox">
+          <input type="text" id="newNameInput" placeholder="New username" style="padding: 6px;" />
+          <button id="saveNameBtn">Save</button>
+        </div>
+
+        <div class="search-bar">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search or start new chat" />
+        </div>
+        <div class="contacts-list" id="users"></div>
+      </div>
+
+      <div class="main-chat">
+        <div id="chatHeader" class="chat-header">
+          <div class="chat-partner">
+            <img id="chatPartnerAvatar" />
+            <div>
+              <h3 id="chatPartnerName">WhatsApp Web</h3>
+              <p class="status">Click on a contact to start chatting</p>
+            </div>
+          </div>
+          <div class="chat-actions">
+            <button><i class="fas fa-search"></i></button>
+            <button><i class="fas fa-paperclip"></i></button>
+            <button><i class="fas fa-ellipsis-v"></i></button>
+          </div>
+        </div>
+
+        <div id="messages" class="message-area"></div>
+
+        <div class="message-composer">
+          <div class="composer-actions">
+            <button><i class="far fa-smile"></i></button>
+            <button><i class="fas fa-paperclip"></i></button>
+          </div>
+          <input type="text" id="messageInput" placeholder="Type a message..." disabled />
+          <button id="sendMessage" disabled>
+            <i class="fas fa-microphone"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script -->
+  <script src="script.js" defer></script>
 </body>
 </html>
