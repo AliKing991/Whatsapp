@@ -7,16 +7,20 @@
   <link rel="stylesheet" href="style.css"/>
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js" defer></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-storage-compat.js" defer></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
   <div class="app-container">
+    <!-- Login Screen -->
     <div class="login-screen">
       <div class="login-container">
-        <img src="assets/whatsapp.png" alt="WhatsApp Logo" class="logo" />
-        <h1>Welcome to WhatsApp Web</h1>
-        <p class="subtitle">Send and receive messages without keeping your phone online</p>
+        <img src="assets/whatsapp.png" alt="Logo" class="logo" />
+        <h1>Welcome</h1>
+        <select id="userRole">
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+        <input type="password" id="adminPassword" placeholder="Admin Password" style="display: none" />
         <div class="login-form">
           <div class="profile-upload">
             <label for="profilePic" id="profileLabel">
@@ -33,6 +37,7 @@
       </div>
     </div>
 
+    <!-- Chat Interface -->
     <div class="chat-interface" style="display: none;">
       <div class="sidebar">
         <div class="sidebar-header">
@@ -41,6 +46,8 @@
             <span id="currentUserName">You</span>
           </div>
           <div class="sidebar-actions">
+            <button><i class="fas fa-users"></i></button>
+            <button><i class="fas fa-comment-dots"></i></button>
             <button id="toggleDark"><i class="fas fa-moon"></i></button>
             <div class="settings-dropdown">
               <button id="settingsBtn"><i class="fas fa-ellipsis-v"></i></button>
@@ -60,7 +67,7 @@
           <i class="fas fa-search"></i>
           <input type="text" placeholder="Search or start new chat" />
         </div>
-        <ul class="contacts-list" id="users"></ul>
+        <div class="contacts-list" id="users"></div>
       </div>
 
       <div class="main-chat">
@@ -72,20 +79,31 @@
               <p class="status">Click on a contact to start chatting</p>
             </div>
           </div>
+          <div class="chat-actions">
+            <button><i class="fas fa-search"></i></button>
+          </div>
         </div>
 
         <div id="messages" class="message-area"></div>
 
         <div class="message-composer">
+          <div class="composer-actions">
+            <button><i class="far fa-smile"></i></button>
+          </div>
           <input type="text" id="messageInput" placeholder="Type a message..." disabled />
           <button id="sendMessage" disabled>
-            <i class="fas fa-paper-plane"></i>
+            <i class="fas fa-microphone"></i>
           </button>
+        </div>
+
+        <!-- Admin Controls -->
+        <div class="admin-controls" style="display: none;">
+          <button id="deleteUserBtn">🗑 Delete User</button>
+          <button id="unsendBtn">⛔ Unsend Last Msg</button>
         </div>
       </div>
     </div>
   </div>
-
   <script src="script.js" defer></script>
 </body>
 </html>
