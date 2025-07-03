@@ -5,168 +5,231 @@ const firebaseConfig = {
   projectId: "whats-app-4f3d7",
   databaseURL: "https://whats-app-4f3d7-default-rtdb.firebaseio.com"
 };
-
 firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
-const usersRef = database.ref("users");
-const messagesRef = database.ref("messages");
 
-const submitUserButton = document.getElementById("submitUser");
-const displayNameInput = document.getElementById("displayName");
-const usersList = document.getElementById("users");
-const chatHeader = document.getElementById("chatHeader");
-const messagesContainer = document.getElementById("messages");
-const messageInput = document.getElementById("messageInput");
-const sendMessageButton = document.getElementById("sendMessage");
+const db = firebase.database();
+const usersRef = db.ref("users");
+const messagesRef = db.ref("messages");
+const statusRef = db.ref("status");
 
 let currentUser = null;
 let currentChatUser = null;
+let isAdmin = false;
 
-submitUserButton.addEventListener("click", async () => {
-  const displayName = displayNameInput.value.trim();
-  if (!displayName) return;
+// UI elements
+const userRole = document.getElementById("userRole");
+const adminPasswordInput = document.getElementById("adminPassword");
+const submitUser = document.getElementById("submitUser");
+const displayNameInput = document.getElementById("displayName");
+const currentUserName = document.getElementById("currentUserName");
+const currentUserAvatar = document.getElementById("currentUserAvatar");
+const usersList = document.getElementById("users");
+const chatPartnerName = document.getElementById("chatPartnerName");
+const chatPartnerAvatar = document.getElementById("chatPartnerAvatar");
+const messageInput = document.getElementById("messageInput");
+const sendMessage = document.getElementById("sendMessage");
+const messagesContainer = document.getElementById("messages");
 
-  const userSnapshot = await usersRef.child(displayName).get();
-  if (userSnapshot.exists()) {
-    currentUser = userSnapshot.val();
-  } else {
-    currentUser = {
-      displayName,
-      photoURL: "assets/unnamed.webp"
-    };
-    await usersRef.child(displayName).set(currentUser);
+// Show/hide admin password field
+userRole.addEventListener("change", () => {
+  adminPasswordInput.style.display = userRole.value === "admin" ? "block" : "none";
+});
+
+// LOGIN + set status
+submitUser.addEventListener("click", async () => {
+  const name = displayNameInput.value.trim();
+  const role = userRole.value;
+  const pwd = adminPasswordInput.value.trim();
+  if (!name) return alert("Enter a name");
+
+  // Admin validation
+  if (role === "admin") {
+    if (pwd !== "Ali-sec") return alert("❌ Wrong admin password!");
+    isAdmin = true;
+    document.querySelector(".admin-controls").style.display = "flex";
   }
 
-  document.getElementById("currentUserName").textContent = currentUser.displayName;
-  document.getElementById("currentUserAvatar").src = currentUser.photoURL;
-  displayNameInput.value = "";
+  const snap = await usersRef.child(name).get();
+  if (snap.exists()) {
+    currentUser = snap.val();
+  } else {
+    currentUser = { displayName: name, photoURL: "assets/unnamed.webp" };
+    await usersRef.child(name).set(currentUser);
+  }
+
+  currentUserName.textContent = name;
+  currentUserAvatar.src = currentUser.photoURL;
   document.querySelector(".login-screen").style.display = "none";
   document.querySelector(".chat-interface").style.display = "flex";
+
+  // Set status online
+  const setStatusOnline = () => statusRef.child(name).set({ online: true, lastSeen: Date.now() });
+  setStatusOnline();
+  setInterval(setStatusOnline, 30000);
+  window.addEventListener("beforeunload", () => {
+    statusRef.child(name).set({ online: false, lastSeen: Date.now() });
+  });
+
   loadUsers();
 });
 
+// LOAD CONTACTS + show status indicator
 function loadUsers() {
-  usersRef.on("value", (snapshot) => {
+  usersRef.on("value", snapshot => {
     usersList.innerHTML = "";
-    snapshot.forEach((childSnapshot) => {
-      const user = childSnapshot.val();
-      if (user.displayName !== currentUser.displayName) {
-        const li = document.createElement("li");
-        li.textContent = user.displayName;
+    snapshot.forEach(child => {
+      const user = child.val();
+      if (user.displayName === currentUser.displayName) return;
+
+      let li = document.getElementById(`user-${user.displayName}`);
+      if (!li) {
+        li = document.createElement("li");
+        li.id = `user-${user.displayName}`;
         li.onclick = () => openChat(user);
         usersList.appendChild(li);
       }
+
+      statusRef.child(user.displayName).get().then(statSnap => {
+        const stat = statSnap.val() || {};
+        const online = stat.online;
+        const lastSeenMin = stat.lastSeen ? Math.floor((Date.now() - stat.lastSeen)/60000) : null;
+
+        li.innerHTML = `
+          ${user.displayName}
+          <span class="status-dot ${online ? 'online' : 'offline'}"></span>
+        `;
+        li.title = online ? "Online now" : (lastSeenMin !== null ? `Last seen ${lastSeenMin} min ago` : "");
+      });
     });
   });
 }
 
+// OPEN CHAT + show partner status
 function openChat(user) {
   currentChatUser = user;
-  document.getElementById("chatPartnerName").textContent = user.displayName;
-  document.getElementById("chatPartnerAvatar").src = user.photoURL || "assets/unnamed.webp";
-  chatHeader.querySelector(".status").textContent = "Online";
-  messagesContainer.innerHTML = "";
+  chatPartnerName.textContent = user.displayName;
+  chatPartnerAvatar.src = user.photoURL || "assets/unnamed.webp";
+
+  statusRef.child(user.displayName).on("value", snap => {
+    const st = snap.val() || {};
+    const online = st.online, lastSeenMin = st.lastSeen ? Math.floor((Date.now() - st.lastSeen)/60000) : null;
+    document.querySelector(".status").textContent = online ? "Online" :
+      (lastSeenMin !== null ? `Last seen ${lastSeenMin} min ago` : "Offline");
+  });
+
   messageInput.disabled = false;
-  sendMessageButton.disabled = false;
+  sendMessage.disabled = false;
+  messagesContainer.innerHTML = "";
   loadMessages();
 }
 
+// GENERATE CHAT ID
+function getChatId(u1, u2) {
+  if (!u1 || !u2) return "invalid_chat";
+  return [u1.displayName, u2.displayName].sort().join("_");
+}
+
+// LOAD MESSAGES
 function loadMessages() {
   const chatId = getChatId(currentUser, currentChatUser);
-  if (chatId === "invalid_chat_id") return;
-
-  messagesRef.child(chatId).on("value", (snapshot) => {
+  messagesRef.child(chatId).on("value", snap => {
     messagesContainer.innerHTML = "";
-    snapshot.forEach((childSnapshot) => {
-      const message = childSnapshot.val();
-      displayMessage(message);
+    snap.forEach(child => {
+      const msg = child.val();
+      displayMessage(msg);
     });
   });
 }
 
-function getChatId(user1, user2) {
-  if (!user1 || !user2 || !user1.displayName || !user2.displayName) return "invalid_chat_id";
-  return [user1.displayName, user2.displayName].sort().join("_");
-}
-
-function displayMessage(message) {
-  const messageDiv = document.createElement("div");
-  messageDiv.classList.add("message");
-  messageDiv.classList.add(message.sender === currentUser.displayName ? "outgoing" : "incoming");
-  messageDiv.innerHTML = `
-    <p>${message.text}</p>
-    <span>${new Date(message.timestamp).toLocaleTimeString()} ✓✓</span>
+// DISPLAY MESSAGE
+function displayMessage(msg) {
+  const div = document.createElement("div");
+  div.className = "message " + (msg.sender === currentUser.displayName ? "outgoing" : "incoming");
+  div.innerHTML = `
+    <p>${msg.text}</p>
+    <span>${new Date(msg.timestamp).toLocaleTimeString()} ✓✓</span>
   `;
-  messagesContainer.appendChild(messageDiv);
+  messagesContainer.appendChild(div);
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-sendMessageButton.addEventListener("click", () => {
-  const messageText = messageInput.value.trim();
-  if (!messageText) return;
-
-  if (!currentUser || !currentChatUser) return alert("Please select a user to chat.");
-
+// SEND MESSAGE
+sendMessage.addEventListener("click", () => {
+  const text = messageInput.value.trim();
+  if (!text || !currentChatUser) return;
   const chatId = getChatId(currentUser, currentChatUser);
-  if (chatId === "invalid_chat_id") return alert("Invalid chat session.");
-
-  const message = {
-    text: messageText,
+  messagesRef.child(chatId).push({
+    text,
     sender: currentUser.displayName,
-    timestamp: Date.now(),
-  };
-
-  messagesRef.child(chatId).push(message)
-    .then(() => {
-      messageInput.value = "";
-    })
-    .catch((error) => {
-      console.error("Message send error:", error);
-    });
+    timestamp: Date.now()
+  });
+  messageInput.value = "";
 });
 
-// Edit name
-const editNameTrigger = document.getElementById("editNameTrigger");
-const saveNameBtn = document.getElementById("saveNameBtn");
-const editNameBox = document.getElementById("editNameBox");
-
-editNameTrigger.addEventListener("click", () => {
-  editNameBox.style.display = editNameBox.style.display === "block" ? "none" : "block";
+// DARK MODE TOGGLE
+document.getElementById("toggleDark").addEventListener("click", () => {
+  document.body.classList.toggle("dark-mode");
 });
 
-saveNameBtn.addEventListener("click", async () => {
+// EDIT USERNAME
+document.getElementById("editNameTrigger").addEventListener("click", () => {
+  const box = document.getElementById("editNameBox");
+  box.style.display = box.style.display === "block" ? "none" : "block";
+});
+
+document.getElementById("saveNameBtn").addEventListener("click", async () => {
   const newName = document.getElementById("newNameInput").value.trim();
-  const oldName = currentUser.displayName;
+  const old = currentUser.displayName;
+  if (!newName || newName === old) return alert("Enter new name");
 
-  if (!newName || newName === oldName) return alert("Please enter a different name.");
-
-  const snapshot = await usersRef.child(newName).get();
-  if (snapshot.exists()) return alert("This name already exists.");
+  if ((await usersRef.child(newName).get()).exists()) return alert("Name exists");
 
   await usersRef.child(newName).set({ ...currentUser, displayName: newName });
-  await usersRef.child(oldName).remove();
+  await usersRef.child(old).remove();
 
-  const allMessagesSnapshot = await messagesRef.get();
+  const allMsgs = await messagesRef.get();
   const updates = {};
-  allMessagesSnapshot.forEach((chatSnap) => {
-    const key = chatSnap.key;
-    if (key.includes(oldName)) {
-      const messages = chatSnap.val();
-      const newChatId = key.replace(oldName, newName).split("_").sort().join("_");
-      updates[newChatId] = messages;
-      updates[key] = null;
+  allMsgs.forEach(snap => {
+    if (snap.key.includes(old)) {
+      const val = snap.val();
+      const newKey = snap.key.replace(old, newName).split("_").sort().join("_");
+      updates[newKey] = val;
+      updates[snap.key] = null;
     }
   });
   await messagesRef.update(updates);
 
   currentUser.displayName = newName;
-  document.getElementById("currentUserName").textContent = newName;
-  editNameBox.style.display = "none";
+  currentUserName.textContent = newName;
+  document.getElementById("editNameBox").style.display = "none";
   loadUsers();
 });
 
-// Dark mode toggle
-const toggleDarkBtn = document.getElementById("toggleDark");
-toggleDarkBtn.addEventListener("click", () => {
-  document.body.classList.toggle("dark");
+// ADMIN CONTROLS
+document.getElementById("deleteUserBtn").addEventListener("click", async () => {
+  if (!currentChatUser) return alert("Select a user");
+  if (!confirm(`Delete ${currentChatUser.displayName}?`)) return;
+
+  await usersRef.child(currentChatUser.displayName).remove();
+  const allMsgs = await messagesRef.get();
+  const updates = {};
+  allMsgs.forEach(snap => {
+    if (snap.key.includes(currentChatUser.displayName)) updates[snap.key] = null;
+  });
+  await messagesRef.update(updates);
+  messagesContainer.innerHTML = "";
+  loadUsers();
+});
+
+document.getElementById("unsendBtn").addEventListener("click", async () => {
+  if (!currentChatUser) return alert("Select chat");
+  const chatId = getChatId(currentUser, currentChatUser);
+
+  const snap = await messagesRef.child(chatId).limitToLast(1).get();
+  snap.forEach(child => {
+    if (child.val().sender === currentUser.displayName || isAdmin) {
+      messagesRef.child(chatId).child(child.key).remove();
+    }
+  });
+  alert("⛔ Last message unsent.");
 });
