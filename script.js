@@ -3,24 +3,18 @@ const firebaseConfig = {
   apiKey: "AIzaSyBEnL-jzxZ89rT9vdqHHNcgjSrFXtGz6ho",
   authDomain: "whats-app-4f3d7.firebaseapp.com",
   projectId: "whats-app-4f3d7",
-  storageBucket: "whats-app-4f3d7.appspot.com",
-  messagingSenderId: "932188834949",
-  appId: "1:932188834949:web:2c73cf9c6ec1d8e587adec",
-  measurementId: "G-JR5G402M8E",
   databaseURL: "https://whats-app-4f3d7-default-rtdb.firebaseio.com"
 };
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
-const storage = firebase.storage();
 
 const usersRef = database.ref("users");
 const messagesRef = database.ref("messages");
 
 const submitUserButton = document.getElementById("submitUser");
 const displayNameInput = document.getElementById("displayName");
-const profilePicInput = document.getElementById("profilePic");
 const usersList = document.getElementById("users");
 const chatHeader = document.getElementById("chatHeader");
 const messagesContainer = document.getElementById("messages");
@@ -33,21 +27,14 @@ let currentChatUser = null;
 // Join chat
 submitUserButton.addEventListener("click", async () => {
   const displayName = displayNameInput.value.trim();
-  const profilePicFile = profilePicInput.files[0];
 
-  if (displayName && profilePicFile) {
-    const profilePicRef = storage.ref(`profile_pics/${displayName}.jpg`);
-    await profilePicRef.put(profilePicFile);
-    const profilePicURL = await profilePicRef.getDownloadURL();
+  if (displayName) {
+    currentUser = { displayName };
+    await usersRef.child(displayName).set({ displayName });
 
-    currentUser = { displayName, profilePicURL };
-    await usersRef.child(displayName).set({ displayName, profilePicURL });
-
-    document.getElementById("currentUserAvatar").src = profilePicURL;
     document.getElementById("currentUserName").textContent = displayName;
 
     displayNameInput.value = "";
-    profilePicInput.value = "";
     document.querySelector(".login-screen").style.display = "none";
     document.querySelector(".chat-interface").style.display = "flex";
 
@@ -74,7 +61,6 @@ function loadUsers() {
 // Open chat
 function openChat(user) {
   currentChatUser = user;
-  document.getElementById("chatPartnerAvatar").src = user.profilePicURL;
   document.getElementById("chatPartnerName").textContent = user.displayName;
   chatHeader.querySelector(".status").textContent = "Online";
 
@@ -87,14 +73,19 @@ function openChat(user) {
 
 // Load messages
 function loadMessages() {
-  const chatPath = `${currentUser.displayName}_${currentChatUser.displayName}`;
-  messagesRef.child(chatPath).on("value", (snapshot) => {
+  const chatId = getChatId(currentUser.displayName, currentChatUser.displayName);
+  messagesRef.child(chatId).on("value", (snapshot) => {
     messagesContainer.innerHTML = "";
     snapshot.forEach((childSnapshot) => {
       const message = childSnapshot.val();
       displayMessage(message);
     });
   });
+}
+
+// Helper to generate unique chat ID (same for both users)
+function getChatId(user1, user2) {
+  return [user1, user2].sort().join("_");
 }
 
 // Display message
@@ -122,8 +113,8 @@ sendMessageButton.addEventListener("click", () => {
       timestamp: Date.now(),
     };
 
-    const chatPath = `${currentUser.displayName}_${currentChatUser.displayName}`;
-    messagesRef.child(chatPath).push(message);
+    const chatId = getChatId(currentUser.displayName, currentChatUser.displayName);
+    messagesRef.child(chatId).push(message);
     messageInput.value = "";
   }
 });
