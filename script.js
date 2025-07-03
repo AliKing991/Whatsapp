@@ -1,4 +1,4 @@
-// Firebase configuration
+// Initialize Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyBEnL-jzxZ89rT9vdqHHNcgjSrFXtGz6ho",
   authDomain: "whats-app-4f3d7.firebaseapp.com",
@@ -6,186 +6,179 @@ const firebaseConfig = {
   databaseURL: "https://whats-app-4f3d7-default-rtdb.firebaseio.com"
 };
 
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
+const db = firebase.database();
 
-const usersRef = database.ref("users");
-const messagesRef = database.ref("messages");
-
-const submitUserButton = document.getElementById("submitUser");
-const displayNameInput = document.getElementById("displayName");
-const usersList = document.getElementById("users");
-const chatHeader = document.getElementById("chatHeader");
-const messagesContainer = document.getElementById("messages");
-const messageInput = document.getElementById("messageInput");
-const sendMessageButton = document.getElementById("sendMessage");
+const usersRef = db.ref("users");
+const messagesRef = db.ref("messages");
+const statusRef = db.ref("status");
 
 let currentUser = null;
 let currentChatUser = null;
 
-// 🔐 Login or Register
-submitUserButton.addEventListener("click", async () => {
-  const displayName = displayNameInput.value.trim();
-  if (!displayName) return;
+const submitUserBtn = document.getElementById("submitUser");
+const displayNameInput = document.getElementById("displayName");
+const userList = document.getElementById("users");
+const chatHeader = document.getElementById("chatHeader");
+const messagesDiv = document.getElementById("messages");
+const msgInput = document.getElementById("messageInput");
+const sendBtn = document.getElementById("sendMessage");
 
-  const userSnapshot = await usersRef.child(displayName).get();
-  if (userSnapshot.exists()) {
-    // ✅ Existing user — login
-    currentUser = userSnapshot.val();
-  } else {
-    // 🆕 New user — register
-    currentUser = { displayName };
-    await usersRef.child(displayName).set(currentUser);
+submitUserBtn.addEventListener("click", async () => {
+  const name = displayNameInput.value.trim();
+  if (!name) return;
+
+  const snap = await usersRef.child(name).get();
+  if (!snap.exists()) {
+    await usersRef.child(name).set({ displayName: name });
   }
 
-  document.getElementById("currentUserName").textContent = currentUser.displayName;
+  currentUser = { displayName: name };
   displayNameInput.value = "";
+
+  document.getElementById("currentUserName").textContent = name;
   document.querySelector(".login-screen").style.display = "none";
   document.querySelector(".chat-interface").style.display = "flex";
+
+  setOnlineStatus(name);
   loadUsers();
 });
 
-// 📥 Load all other users
 function loadUsers() {
-  usersRef.on("value", (snapshot) => {
-    usersList.innerHTML = "";
-    snapshot.forEach((childSnapshot) => {
-      const user = childSnapshot.val();
+  usersRef.on("value", (snap) => {
+    userList.innerHTML = "";
+    snap.forEach((userSnap) => {
+      const user = userSnap.val();
       if (user.displayName !== currentUser.displayName) {
         const li = document.createElement("li");
         li.textContent = user.displayName;
         li.onclick = () => openChat(user);
-        usersList.appendChild(li);
+        userList.appendChild(li);
       }
     });
   });
 }
 
-// 📤 Open chat with selected user
 function openChat(user) {
   currentChatUser = user;
-  document.getElementById("chatPartnerName").textContent = user.displayName;
-  chatHeader.querySelector(".status").textContent = "Online";
-
-  messagesContainer.innerHTML = "";
-  messageInput.disabled = false;
-  sendMessageButton.disabled = false;
+  chatHeader.querySelector("#chatPartnerName").textContent = user.displayName;
+  chatHeader.querySelector(".status").textContent = "Connecting...";
+  loadTypingStatus(user.displayName);
   loadMessages();
+  msgInput.disabled = false;
+  sendBtn.disabled = false;
 }
 
-// 🔄 Load messages from database
+function getChatId(a, b) {
+  return [a.displayName, b.displayName].sort().join("_");
+}
+
 function loadMessages() {
   const chatId = getChatId(currentUser, currentChatUser);
-  if (chatId === "invalid_chat_id") return;
-
-  messagesRef.child(chatId).on("value", (snapshot) => {
-    messagesContainer.innerHTML = "";
-    snapshot.forEach((childSnapshot) => {
-      const message = childSnapshot.val();
-      displayMessage(message);
+  messagesRef.child(chatId).on("value", (snap) => {
+    messagesDiv.innerHTML = "";
+    snap.forEach((child) => {
+      const msg = child.val();
+      const div = document.createElement("div");
+      div.classList.add("message", msg.sender === currentUser.displayName ? "outgoing" : "incoming");
+      div.innerHTML = `<p>${msg.text}</p><span>${new Date(msg.timestamp).toLocaleTimeString()} <span class="message-status">${msg.sender === currentUser.displayName ? (msg.read ? "✓✓" : "✓") : ""}</span></span>`;
+      messagesDiv.appendChild(div);
     });
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
   });
 }
 
-// 🔑 Create unique chat ID for both users
-function getChatId(user1, user2) {
-  if (!user1 || !user2 || !user1.displayName || !user2.displayName) {
-    console.error("❌ Chat ID Error:", user1, user2);
-    return "invalid_chat_id";
-  }
-  return [user1.displayName, user2.displayName].sort().join("_");
-}
-
-// 💬 Display single message in UI
-function displayMessage(message) {
-  const messageDiv = document.createElement("div");
-  messageDiv.classList.add("message");
-  messageDiv.classList.add(
-    message.sender === currentUser.displayName ? "outgoing" : "incoming"
-  );
-  messageDiv.innerHTML = `
-    <p>${message.text}</p>
-    <span>${new Date(message.timestamp).toLocaleTimeString()}</span>
-  `;
-  messagesContainer.appendChild(messageDiv);
-  messagesContainer.scrollTop = messagesContainer.scrollHeight;
-}
-
-// 📤 Send message
-sendMessageButton.addEventListener("click", () => {
-  const messageText = messageInput.value.trim();
-  if (!messageText) return;
-
-  if (!currentUser || !currentChatUser) {
-    alert("Please select a user to chat.");
-    return;
-  }
-
+sendBtn.addEventListener("click", () => {
+  const text = msgInput.value.trim();
+  if (!text || !currentChatUser) return;
   const chatId = getChatId(currentUser, currentChatUser);
-  if (chatId === "invalid_chat_id") {
-    alert("Invalid chat session.");
-    return;
-  }
-
-  const message = {
-    text: messageText,
+  const msg = {
+    text,
     sender: currentUser.displayName,
     timestamp: Date.now(),
+    read: false,
   };
-
-  messagesRef.child(chatId).push(message)
-    .then(() => {
-      messageInput.value = "";
-    })
-    .catch((error) => {
-      console.error("❌ Message send error:", error);
-    });
+  messagesRef.child(chatId).push(msg).then(() => {
+    msgInput.value = "";
+  });
 });
 
+msgInput.addEventListener("input", () => {
+  const typingRef = db.ref(`typing/${getChatId(currentUser, currentChatUser)}`);
+  typingRef.set(currentUser.displayName);
+  setTimeout(() => typingRef.set(""), 1500);
+});
 
-// ✏️ Edit Username & Move Chats
-document.getElementById("saveNameBtn").addEventListener("click", async () => {
-  const newName = document.getElementById("newNameInput").value.trim();
-  const oldName = currentUser.displayName;
-
-  if (!newName || newName === oldName) {
-    alert("Please enter a different name.");
-    return;
-  }
-
-  const snapshot = await usersRef.child(newName).get();
-  if (snapshot.exists()) {
-    alert("This name already exists.");
-    return;
-  }
-
-  // Step 1: Rename user in users node
-  await usersRef.child(newName).set({ displayName: newName });
-  await usersRef.child(oldName).remove();
-
-  // Step 2: Migrate messages
-  const allMessagesSnapshot = await messagesRef.get();
-  const updates = {};
-
-  allMessagesSnapshot.forEach((chatSnap) => {
-    const key = chatSnap.key;
-
-    if (key.includes(oldName)) {
-      const messages = chatSnap.val();
-      const newChatId = key.replace(oldName, newName).split("_").sort().join("_");
-      updates[newChatId] = messages;
-      updates[key] = null; // delete old
+function loadTypingStatus(partner) {
+  const typingRef = db.ref(`typing/${getChatId(currentUser, { displayName: partner })}`);
+  typingRef.on("value", (snap) => {
+    const val = snap.val();
+    if (val && val !== currentUser.displayName) {
+      chatHeader.querySelector(".status").textContent = `${val} is typing...`;
+    } else {
+      updateOnlineStatus(partner);
     }
   });
+}
 
+function setOnlineStatus(user) {
+  const ref = statusRef.child(user);
+  ref.set("online");
+  ref.onDisconnect().set(new Date().toISOString());
+}
+
+function updateOnlineStatus(user) {
+  statusRef.child(user).once("value", (snap) => {
+    const val = snap.val();
+    if (val === "online") {
+      chatHeader.querySelector(".status").textContent = "Online";
+    } else {
+      const lastSeen = new Date(val);
+      chatHeader.querySelector(".status").textContent = `Last seen at ${lastSeen.toLocaleTimeString()}`;
+    }
+  });
+}
+
+// Save Username Change
+const saveBtn = document.getElementById("saveNameBtn");
+saveBtn.addEventListener("click", async () => {
+  const newName = document.getElementById("newNameInput").value.trim();
+  if (!newName || newName === currentUser.displayName) return alert("Invalid name");
+  const exists = await usersRef.child(newName).get();
+  if (exists.exists()) return alert("Name exists!");
+
+  await usersRef.child(newName).set({ displayName: newName });
+  await usersRef.child(currentUser.displayName).remove();
+
+  const snapshot = await messagesRef.get();
+  const updates = {};
+  snapshot.forEach((snap) => {
+    const key = snap.key;
+    if (key.includes(currentUser.displayName)) {
+      const newKey = key.replace(currentUser.displayName, newName).split("_").sort().join("_");
+      updates[newKey] = snap.val();
+      updates[key] = null;
+    }
+  });
   await messagesRef.update(updates);
 
-  // Step 3: Update local + UI
   currentUser.displayName = newName;
   document.getElementById("currentUserName").textContent = newName;
   document.getElementById("editNameBox").style.display = "none";
   loadUsers();
-
-  alert("✅ Username updated & chats preserved!");
 });
+
+// Toggle Dark Mode
+const darkToggle = document.getElementById("darkToggle");
+darkToggle.addEventListener("click", () => {
+  document.body.classList.toggle("dark-mode");
+});
+
+// Notification
+function showNotification(text) {
+  const note = document.createElement("div");
+  note.className = "notification";
+  note.textContent = text;
+  document.body.appendChild(note);
+  setTimeout(() => note.remove(), 4000);
+}
