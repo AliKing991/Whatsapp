@@ -92,7 +92,7 @@ body.dark-mode .contacts-list {
   position: absolute;
   bottom: 0;
   right: 0;
-  background-color: var(--whatsapp-accent);
+  background-color: var(--whatsapp-accent);  
   color: white;
   border-radius: 50%;
   padding: 2px 8px;
@@ -289,7 +289,7 @@ body.dark-mode .contacts-list {
 }
 
 #settingsMenu {
-  display: none;
+  display: block;
   position: absolute;
   top: 100%;
   right: 0;
