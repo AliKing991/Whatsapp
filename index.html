@@ -5,21 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Chat App</title>
   <link rel="stylesheet" href="style.css"/>
-
-  <!-- FontAwesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-  <!-- Firebase Core -->
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-storage-compat.js" defer></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
   <div class="app-container">
-
     <!-- Login Screen -->
     <div class="login-screen">
       <div class="login-container">
-        <img src="assets/whatsapp.png" alt="Logo" class="logo" />
+        <img src="assets/whatsapp.png" alt="WhatsApp Logo" class="logo" />
         <h1>Welcome to WhatsApp Web</h1>
         <p class="subtitle">Send and receive messages without keeping your phone online</p>
         <div class="login-form">
@@ -30,8 +26,10 @@
             </label>
             <input type="file" id="profilePic" accept="image/*" hidden />
           </div>
-          <input type="text" id="displayName" placeholder="Enter your name" />
-          <button id="submitUser" class="whatsapp-btn"><i class="fas fa-chevron-right"></i> Continue</button>
+          <input type="text" id="displayName" placeholder="Enter your name" required />
+          <button id="submitUser" class="whatsapp-btn">
+            <i class="fas fa-chevron-right"></i> Continue
+          </button>
         </div>
       </div>
     </div>
@@ -45,17 +43,19 @@
             <span id="currentUserName">You</span>
           </div>
           <div class="sidebar-actions">
-            <button id="toggleDarkMode" title="Toggle Theme"><i class="fas fa-moon"></i></button>
+            <button id="toggleUserList"><i class="fas fa-users"></i></button>
+            <button id="toggleChatList"><i class="fas fa-comment-dots"></i></button>
             <div class="settings-dropdown">
               <button id="settingsBtn"><i class="fas fa-ellipsis-v"></i></button>
               <div id="settingsMenu">
                 <button id="editNameTrigger">✏️ Edit Username</button>
+                <button id="toggleDarkMode">🌙 Toggle Dark Mode</button>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Username Edit Box -->
+        <!-- Edit Username Box -->
         <div id="editNameBox">
           <input type="text" id="newNameInput" placeholder="New username" />
           <button id="saveNameBtn">Save</button>
@@ -65,50 +65,40 @@
           <i class="fas fa-search"></i>
           <input type="text" placeholder="Search or start new chat" />
         </div>
-
-        <div class="contacts-list" id="users"></div>
+        <ul class="contacts-list" id="users"></ul>
       </div>
 
-      <!-- Main Chat Area -->
       <div class="main-chat">
         <div id="chatHeader" class="chat-header">
           <div class="chat-partner">
             <img id="chatPartnerAvatar" />
             <div>
-              <h3 id="chatPartnerName">Select a Contact</h3>
-              <p class="status">Offline</p>
-              <span class="last-seen" id="lastSeenInfo">Last seen: N/A</span>
-              <span class="typing-indicator" id="typingIndicator" style="display:none;">Typing...</span>
+              <h3 id="chatPartnerName">WhatsApp Web</h3>
+              <p class="status" id="chatStatusText">Click on a contact to start chatting</p>
             </div>
           </div>
           <div class="chat-actions">
-            <button><i class="fas fa-search"></i></button>
-            <button><i class="fas fa-paperclip"></i></button>
-            <button><i class="fas fa-trash-alt" id="deleteChatBtn" title="Delete Chat"></i></button>
+            <button id="searchMessages"><i class="fas fa-search"></i></button>
+            <button id="openAttachment"><i class="fas fa-paperclip"></i></button>
+            <button id="openChatSettings"><i class="fas fa-ellipsis-v"></i></button>
           </div>
         </div>
 
-        <!-- Message Display Area -->
         <div id="messages" class="message-area"></div>
 
-        <!-- Message Composer -->
         <div class="message-composer">
           <div class="composer-actions">
-            <button><i class="far fa-smile"></i></button>
+            <button id="emojiBtn"><i class="far fa-smile"></i></button>
           </div>
           <input type="text" id="messageInput" placeholder="Type a message..." disabled />
-          <button id="sendMessage" disabled><i class="fas fa-paper-plane"></i></button>
+          <button id="sendMessage" disabled>
+            <i class="fas fa-paper-plane"></i>
+          </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Notification Alert -->
-  <div id="notification" class="notification" style="display:none;">
-    <p id="notificationText"></p>
-  </div>
-
-  <!-- JS Scripts -->
   <script src="script.js" defer></script>
 </body>
 </html>
