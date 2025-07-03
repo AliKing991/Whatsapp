@@ -11,12 +11,14 @@ const db = firebase.database();
 const usersRef = db.ref("users");
 const messagesRef = db.ref("messages");
 const statusRef = db.ref("status");
+const typingRef = db.ref("typingStatus");
 
 let currentUser = null;
 let currentChatUser = null;
 let isAdmin = false;
+let typingTimeout = null;
 
-// UI elements
+// UI Elements
 const userRole = document.getElementById("userRole");
 const adminPasswordInput = document.getElementById("adminPassword");
 const submitUser = document.getElementById("submitUser");
@@ -30,19 +32,19 @@ const messageInput = document.getElementById("messageInput");
 const sendMessage = document.getElementById("sendMessage");
 const messagesContainer = document.getElementById("messages");
 
-// Show/hide admin password field
+// Show admin password if role selected
 userRole.addEventListener("change", () => {
   adminPasswordInput.style.display = userRole.value === "admin" ? "block" : "none";
 });
 
-// LOGIN + set status
+// LOGIN
 submitUser.addEventListener("click", async () => {
   const name = displayNameInput.value.trim();
   const role = userRole.value;
   const pwd = adminPasswordInput.value.trim();
-  if (!name) return alert("Enter a name");
 
-  // Admin validation
+  if (!name) return alert("Enter your name");
+
   if (role === "admin") {
     if (pwd !== "Ali-sec") return alert("❌ Wrong admin password!");
     isAdmin = true;
@@ -62,49 +64,48 @@ submitUser.addEventListener("click", async () => {
   document.querySelector(".login-screen").style.display = "none";
   document.querySelector(".chat-interface").style.display = "flex";
 
-  // Set status online
-  const setStatusOnline = () => statusRef.child(name).set({ online: true, lastSeen: Date.now() });
-  setStatusOnline();
-  setInterval(setStatusOnline, 30000);
+  // Status
+  const setOnline = () => statusRef.child(name).set({ online: true, lastSeen: Date.now() });
+  setOnline();
+  setInterval(setOnline, 30000);
   window.addEventListener("beforeunload", () => {
     statusRef.child(name).set({ online: false, lastSeen: Date.now() });
+    typingRef.child(name).remove();
   });
 
   loadUsers();
 });
 
-// LOAD CONTACTS + show status indicator
+// LOAD USERS
 function loadUsers() {
-  usersRef.on("value", snapshot => {
+  usersRef.on("value", snap => {
     usersList.innerHTML = "";
-    snapshot.forEach(child => {
+    snap.forEach(child => {
       const user = child.val();
       if (user.displayName === currentUser.displayName) return;
 
-      let li = document.getElementById(`user-${user.displayName}`);
-      if (!li) {
-        li = document.createElement("li");
-        li.id = `user-${user.displayName}`;
-        li.onclick = () => openChat(user);
-        usersList.appendChild(li);
-      }
+      const li = document.createElement("li");
+      li.id = `user-${user.displayName}`;
+      li.onclick = () => openChat(user);
 
-      statusRef.child(user.displayName).get().then(statSnap => {
-        const stat = statSnap.val() || {};
+      statusRef.child(user.displayName).get().then(statusSnap => {
+        const stat = statusSnap.val() || {};
         const online = stat.online;
-        const lastSeenMin = stat.lastSeen ? Math.floor((Date.now() - stat.lastSeen)/60000) : null;
+        const lastSeen = stat.lastSeen;
+        const minsAgo = lastSeen ? Math.floor((Date.now() - lastSeen) / 60000) : null;
 
         li.innerHTML = `
           ${user.displayName}
           <span class="status-dot ${online ? 'online' : 'offline'}"></span>
         `;
-        li.title = online ? "Online now" : (lastSeenMin !== null ? `Last seen ${lastSeenMin} min ago` : "");
+        li.title = online ? "Online" : (minsAgo !== null ? `Last seen ${minsAgo} min ago` : "");
+        usersList.appendChild(li);
       });
     });
   });
 }
 
-// OPEN CHAT + show partner status
+// OPEN CHAT
 function openChat(user) {
   currentChatUser = user;
   chatPartnerName.textContent = user.displayName;
@@ -112,9 +113,17 @@ function openChat(user) {
 
   statusRef.child(user.displayName).on("value", snap => {
     const st = snap.val() || {};
-    const online = st.online, lastSeenMin = st.lastSeen ? Math.floor((Date.now() - st.lastSeen)/60000) : null;
-    document.querySelector(".status").textContent = online ? "Online" :
-      (lastSeenMin !== null ? `Last seen ${lastSeenMin} min ago` : "Offline");
+    const online = st.online;
+    const minsAgo = st.lastSeen ? Math.floor((Date.now() - st.lastSeen) / 60000) : null;
+    document.querySelector(".status").textContent =
+      online ? "Online" : (minsAgo !== null ? `Last seen ${minsAgo} min ago` : "Offline");
+  });
+
+  typingRef.child(user.displayName).on("value", snap => {
+    const t = snap.val();
+    if (t && t.to === currentUser.displayName && t.isTyping) {
+      document.querySelector(".status").textContent = "Typing...";
+    }
   });
 
   messageInput.disabled = false;
@@ -123,7 +132,7 @@ function openChat(user) {
   loadMessages();
 }
 
-// GENERATE CHAT ID
+// CHAT ID
 function getChatId(u1, u2) {
   if (!u1 || !u2) return "invalid_chat";
   return [u1.displayName, u2.displayName].sort().join("_");
@@ -134,10 +143,7 @@ function loadMessages() {
   const chatId = getChatId(currentUser, currentChatUser);
   messagesRef.child(chatId).on("value", snap => {
     messagesContainer.innerHTML = "";
-    snap.forEach(child => {
-      const msg = child.val();
-      displayMessage(msg);
-    });
+    snap.forEach(child => displayMessage(child.val()));
   });
 }
 
@@ -164,14 +170,32 @@ sendMessage.addEventListener("click", () => {
     timestamp: Date.now()
   });
   messageInput.value = "";
+  typingRef.child(currentUser.displayName).set({ to: currentChatUser.displayName, isTyping: false });
 });
 
-// DARK MODE TOGGLE
+// TYPING INDICATOR
+messageInput.addEventListener("input", () => {
+  if (!currentChatUser) return;
+  typingRef.child(currentUser.displayName).set({
+    to: currentChatUser.displayName,
+    isTyping: true
+  });
+
+  clearTimeout(typingTimeout);
+  typingTimeout = setTimeout(() => {
+    typingRef.child(currentUser.displayName).set({
+      to: currentChatUser.displayName,
+      isTyping: false
+    });
+  }, 2000);
+});
+
+// DARK MODE
 document.getElementById("toggleDark").addEventListener("click", () => {
   document.body.classList.toggle("dark-mode");
 });
 
-// EDIT USERNAME
+// EDIT NAME
 document.getElementById("editNameTrigger").addEventListener("click", () => {
   const box = document.getElementById("editNameBox");
   box.style.display = box.style.display === "block" ? "none" : "block";
@@ -181,7 +205,6 @@ document.getElementById("saveNameBtn").addEventListener("click", async () => {
   const newName = document.getElementById("newNameInput").value.trim();
   const old = currentUser.displayName;
   if (!newName || newName === old) return alert("Enter new name");
-
   if ((await usersRef.child(newName).get()).exists()) return alert("Name exists");
 
   await usersRef.child(newName).set({ ...currentUser, displayName: newName });
@@ -205,7 +228,7 @@ document.getElementById("saveNameBtn").addEventListener("click", async () => {
   loadUsers();
 });
 
-// ADMIN CONTROLS
+// ADMIN DELETE USER
 document.getElementById("deleteUserBtn").addEventListener("click", async () => {
   if (!currentChatUser) return alert("Select a user");
   if (!confirm(`Delete ${currentChatUser.displayName}?`)) return;
@@ -221,11 +244,12 @@ document.getElementById("deleteUserBtn").addEventListener("click", async () => {
   loadUsers();
 });
 
+// ADMIN UNSEND LAST MESSAGE
 document.getElementById("unsendBtn").addEventListener("click", async () => {
   if (!currentChatUser) return alert("Select chat");
   const chatId = getChatId(currentUser, currentChatUser);
-
   const snap = await messagesRef.child(chatId).limitToLast(1).get();
+
   snap.forEach(child => {
     if (child.val().sender === currentUser.displayName || isAdmin) {
       messagesRef.child(chatId).child(child.key).remove();
