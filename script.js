@@ -1,56 +1,55 @@
-// Firebase Config
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyBEnL-jzxZ89rT9vdqHHNcgjSrFXtGz6ho",
   authDomain: "whats-app-4f3d7.firebaseapp.com",
   projectId: "whats-app-4f3d7",
-  databaseURL: "https://whats-app-4f3d7-default-rtdb.firebaseio.com",
+  databaseURL: "https://whats-app-4f3d7-default-rtdb.firebaseio.com"
 };
-firebase.initializeApp(firebaseConfig);
 
-const db = firebase.database();
-const usersRef = db.ref("users");
-const messagesRef = db.ref("messages");
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+const usersRef = database.ref("users");
+const messagesRef = database.ref("messages");
+
+const submitUserButton = document.getElementById("submitUser");
+const displayNameInput = document.getElementById("displayName");
+const usersList = document.getElementById("users");
+const chatHeader = document.getElementById("chatHeader");
+const messagesContainer = document.getElementById("messages");
+const messageInput = document.getElementById("messageInput");
+const sendMessageButton = document.getElementById("sendMessage");
 
 let currentUser = null;
 let currentChatUser = null;
 
-// DOM Elements
-const submitUserButton = document.getElementById("submitUser");
-const displayNameInput = document.getElementById("displayName");
-const usersList = document.getElementById("users");
-const messageInput = document.getElementById("messageInput");
-const sendMessageButton = document.getElementById("sendMessage");
-const currentUserName = document.getElementById("currentUserName");
-const chatHeader = document.getElementById("chatHeader");
-const chatPartnerName = document.getElementById("chatPartnerName");
-const messagesContainer = document.getElementById("messages");
-const toggleDark = document.getElementById("toggleDark");
-
-// Login/Register
 submitUserButton.addEventListener("click", async () => {
-  const name = displayNameInput.value.trim();
-  if (!name) return;
+  const displayName = displayNameInput.value.trim();
+  if (!displayName) return;
 
-  const snap = await usersRef.child(name).get();
-  if (snap.exists()) {
-    currentUser = snap.val();
+  const userSnapshot = await usersRef.child(displayName).get();
+  if (userSnapshot.exists()) {
+    currentUser = userSnapshot.val();
   } else {
-    currentUser = { displayName: name };
-    await usersRef.child(name).set(currentUser);
+    currentUser = {
+      displayName,
+      photoURL: "assets/unnamed.webp"
+    };
+    await usersRef.child(displayName).set(currentUser);
   }
 
-  currentUserName.textContent = currentUser.displayName;
+  document.getElementById("currentUserName").textContent = currentUser.displayName;
+  document.getElementById("currentUserAvatar").src = currentUser.photoURL;
+  displayNameInput.value = "";
   document.querySelector(".login-screen").style.display = "none";
   document.querySelector(".chat-interface").style.display = "flex";
   loadUsers();
 });
 
-// Load users
 function loadUsers() {
   usersRef.on("value", (snapshot) => {
     usersList.innerHTML = "";
-    snapshot.forEach((snap) => {
-      const user = snap.val();
+    snapshot.forEach((childSnapshot) => {
+      const user = childSnapshot.val();
       if (user.displayName !== currentUser.displayName) {
         const li = document.createElement("li");
         li.textContent = user.displayName;
@@ -61,105 +60,113 @@ function loadUsers() {
   });
 }
 
-// Open chat
 function openChat(user) {
   currentChatUser = user;
-  chatPartnerName.textContent = user.displayName;
+  document.getElementById("chatPartnerName").textContent = user.displayName;
+  document.getElementById("chatPartnerAvatar").src = user.photoURL || "assets/unnamed.webp";
+  chatHeader.querySelector(".status").textContent = "Online";
+  messagesContainer.innerHTML = "";
   messageInput.disabled = false;
   sendMessageButton.disabled = false;
   loadMessages();
 }
 
-// Get unique chat ID
-function getChatId(user1, user2) {
-  if (!user1 || !user2) return "invalid_chat_id";
-  return [user1.displayName, user2.displayName].sort().join("_");
-}
-
-// Load messages
 function loadMessages() {
   const chatId = getChatId(currentUser, currentChatUser);
   if (chatId === "invalid_chat_id") return;
 
   messagesRef.child(chatId).on("value", (snapshot) => {
     messagesContainer.innerHTML = "";
-    snapshot.forEach((snap) => {
-      const msg = snap.val();
-      displayMessage(msg);
+    snapshot.forEach((childSnapshot) => {
+      const message = childSnapshot.val();
+      displayMessage(message);
     });
   });
 }
 
-// Display message
-function displayMessage(msg) {
-  const div = document.createElement("div");
-  div.classList.add("message");
-  div.classList.add(msg.sender === currentUser.displayName ? "outgoing" : "incoming");
-  div.innerHTML = `
-    <p>${msg.text}</p>
-    <span>${new Date(msg.timestamp).toLocaleTimeString()}</span>
+function getChatId(user1, user2) {
+  if (!user1 || !user2 || !user1.displayName || !user2.displayName) return "invalid_chat_id";
+  return [user1.displayName, user2.displayName].sort().join("_");
+}
+
+function displayMessage(message) {
+  const messageDiv = document.createElement("div");
+  messageDiv.classList.add("message");
+  messageDiv.classList.add(message.sender === currentUser.displayName ? "outgoing" : "incoming");
+  messageDiv.innerHTML = `
+    <p>${message.text}</p>
+    <span>${new Date(message.timestamp).toLocaleTimeString()} ✓✓</span>
   `;
-  messagesContainer.appendChild(div);
+  messagesContainer.appendChild(messageDiv);
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// Send message
 sendMessageButton.addEventListener("click", () => {
-  const text = messageInput.value.trim();
-  if (!text || !currentChatUser) return;
+  const messageText = messageInput.value.trim();
+  if (!messageText) return;
+
+  if (!currentUser || !currentChatUser) return alert("Please select a user to chat.");
 
   const chatId = getChatId(currentUser, currentChatUser);
-  const msg = {
-    text,
+  if (chatId === "invalid_chat_id") return alert("Invalid chat session.");
+
+  const message = {
+    text: messageText,
     sender: currentUser.displayName,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   };
-  messagesRef.child(chatId).push(msg).then(() => {
-    messageInput.value = "";
-  });
+
+  messagesRef.child(chatId).push(message)
+    .then(() => {
+      messageInput.value = "";
+    })
+    .catch((error) => {
+      console.error("Message send error:", error);
+    });
 });
 
-// Edit Username
-const editTrigger = document.getElementById("editNameTrigger");
-const editBox = document.getElementById("editNameBox");
+// Edit name
+const editNameTrigger = document.getElementById("editNameTrigger");
 const saveNameBtn = document.getElementById("saveNameBtn");
+const editNameBox = document.getElementById("editNameBox");
 
-editTrigger.addEventListener("click", () => {
-  editBox.style.display = editBox.style.display === "block" ? "none" : "block";
+editNameTrigger.addEventListener("click", () => {
+  editNameBox.style.display = editNameBox.style.display === "block" ? "none" : "block";
 });
 
 saveNameBtn.addEventListener("click", async () => {
   const newName = document.getElementById("newNameInput").value.trim();
   const oldName = currentUser.displayName;
 
-  if (!newName || newName === oldName) return alert("Choose a different name.");
-  const exists = await usersRef.child(newName).get();
-  if (exists.exists()) return alert("Name already taken.");
+  if (!newName || newName === oldName) return alert("Please enter a different name.");
 
-  await usersRef.child(newName).set({ displayName: newName });
+  const snapshot = await usersRef.child(newName).get();
+  if (snapshot.exists()) return alert("This name already exists.");
+
+  await usersRef.child(newName).set({ ...currentUser, displayName: newName });
   await usersRef.child(oldName).remove();
 
-  // Migrate messages
-  const msgSnap = await messagesRef.get();
+  const allMessagesSnapshot = await messagesRef.get();
   const updates = {};
-  msgSnap.forEach((chat) => {
-    const key = chat.key;
+  allMessagesSnapshot.forEach((chatSnap) => {
+    const key = chatSnap.key;
     if (key.includes(oldName)) {
-      const newKey = key.replace(oldName, newName).split("_").sort().join("_");
-      updates[newKey] = chat.val();
+      const messages = chatSnap.val();
+      const newChatId = key.replace(oldName, newName).split("_").sort().join("_");
+      updates[newChatId] = messages;
       updates[key] = null;
     }
   });
   await messagesRef.update(updates);
 
   currentUser.displayName = newName;
-  currentUserName.textContent = newName;
-  editBox.style.display = "none";
+  document.getElementById("currentUserName").textContent = newName;
+  editNameBox.style.display = "none";
   loadUsers();
-  alert("✅ Username updated!");
 });
 
 // Dark mode toggle
-toggleDark.addEventListener("click", () => {
+const toggleDarkBtn = document.getElementById("toggleDark");
+toggleDarkBtn.addEventListener("click", () => {
   document.body.classList.toggle("dark");
 });
