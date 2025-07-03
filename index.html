@@ -12,7 +12,6 @@
 </head>
 <body>
   <div class="app-container">
-    <!-- Login Screen -->
     <div class="login-screen">
       <div class="login-container">
         <img src="assets/whatsapp.png" alt="WhatsApp Logo" class="logo" />
@@ -34,7 +33,6 @@
       </div>
     </div>
 
-    <!-- Chat Interface -->
     <div class="chat-interface" style="display: none;">
       <div class="sidebar">
         <div class="sidebar-header">
@@ -43,19 +41,16 @@
             <span id="currentUserName">You</span>
           </div>
           <div class="sidebar-actions">
-            <button id="toggleUserList"><i class="fas fa-users"></i></button>
-            <button id="toggleChatList"><i class="fas fa-comment-dots"></i></button>
+            <button id="toggleDark"><i class="fas fa-moon"></i></button>
             <div class="settings-dropdown">
               <button id="settingsBtn"><i class="fas fa-ellipsis-v"></i></button>
               <div id="settingsMenu">
                 <button id="editNameTrigger">✏️ Edit Username</button>
-                <button id="toggleDarkMode">🌙 Toggle Dark Mode</button>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Edit Username Box -->
         <div id="editNameBox">
           <input type="text" id="newNameInput" placeholder="New username" />
           <button id="saveNameBtn">Save</button>
@@ -74,22 +69,14 @@
             <img id="chatPartnerAvatar" />
             <div>
               <h3 id="chatPartnerName">WhatsApp Web</h3>
-              <p class="status" id="chatStatusText">Click on a contact to start chatting</p>
+              <p class="status">Click on a contact to start chatting</p>
             </div>
-          </div>
-          <div class="chat-actions">
-            <button id="searchMessages"><i class="fas fa-search"></i></button>
-            <button id="openAttachment"><i class="fas fa-paperclip"></i></button>
-            <button id="openChatSettings"><i class="fas fa-ellipsis-v"></i></button>
           </div>
         </div>
 
         <div id="messages" class="message-area"></div>
 
         <div class="message-composer">
-          <div class="composer-actions">
-            <button id="emojiBtn"><i class="far fa-smile"></i></button>
-          </div>
           <input type="text" id="messageInput" placeholder="Type a message..." disabled />
           <button id="sendMessage" disabled>
             <i class="fas fa-paper-plane"></i>
