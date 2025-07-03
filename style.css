@@ -6,7 +6,26 @@
   --whatsapp-message-in: #ffffff;
   --whatsapp-message-out: #dcf8c6;
 }
-
+    #settingsMenu button:hover {
+      background-color: #eee;
+      cursor: pointer;
+    }
+    .settings-dropdown {
+      position: relative;
+    }
+    #settingsMenu {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 100%;
+      background: white;
+      border: 1px solid #ccc;
+      z-index: 999;
+    }
+    #editNameBox {
+      display: none;
+      padding: 10px;
+    }
 body {
   margin: 0;
   font-family: Arial, sans-serif;
