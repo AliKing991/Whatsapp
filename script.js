@@ -24,17 +24,16 @@ const sendMessageButton = document.getElementById("sendMessage");
 let currentUser = null;
 let currentChatUser = null;
 
-// Join chat
+// Join chat (no image, simple name only)
 submitUserButton.addEventListener("click", async () => {
   const displayName = displayNameInput.value.trim();
-
   if (displayName) {
     currentUser = { displayName };
     await usersRef.child(displayName).set({ displayName });
 
     document.getElementById("currentUserName").textContent = displayName;
-
     displayNameInput.value = "";
+
     document.querySelector(".login-screen").style.display = "none";
     document.querySelector(".chat-interface").style.display = "flex";
 
@@ -58,9 +57,10 @@ function loadUsers() {
   });
 }
 
-// Open chat
+// Open chat with another user
 function openChat(user) {
   currentChatUser = user;
+
   document.getElementById("chatPartnerName").textContent = user.displayName;
   chatHeader.querySelector(".status").textContent = "Online";
 
@@ -71,9 +71,11 @@ function openChat(user) {
   loadMessages();
 }
 
-// Load messages
+// Load messages between two users
 function loadMessages() {
-  const chatId = getChatId(currentUser.displayName, currentChatUser.displayName);
+  const chatId = getChatId(currentUser, currentChatUser);
+  if (chatId === "invalid_chat_id") return;
+
   messagesRef.child(chatId).on("value", (snapshot) => {
     messagesContainer.innerHTML = "";
     snapshot.forEach((childSnapshot) => {
@@ -83,12 +85,16 @@ function loadMessages() {
   });
 }
 
-// Helper to generate unique chat ID (same for both users)
+// Generate a unique chat ID that’s same for both users
 function getChatId(user1, user2) {
-  return [user1, user2].sort().join("_");
+  if (!user1 || !user2 || !user1.displayName || !user2.displayName) {
+    console.error("❌ Chat ID Error: Missing user info", user1, user2);
+    return "invalid_chat_id";
+  }
+  return [user1.displayName, user2.displayName].sort().join("_");
 }
 
-// Display message
+// Display message in the chat container
 function displayMessage(message) {
   const messageDiv = document.createElement("div");
   messageDiv.classList.add("message");
@@ -103,18 +109,33 @@ function displayMessage(message) {
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// Send message
+// Send message on button click
 sendMessageButton.addEventListener("click", () => {
   const messageText = messageInput.value.trim();
-  if (messageText && currentChatUser) {
-    const message = {
-      text: messageText,
-      sender: currentUser.displayName,
-      timestamp: Date.now(),
-    };
+  if (!messageText) return;
 
-    const chatId = getChatId(currentUser.displayName, currentChatUser.displayName);
-    messagesRef.child(chatId).push(message);
-    messageInput.value = "";
+  if (!currentUser || !currentChatUser) {
+    alert("Please select a user to chat.");
+    return;
   }
+
+  const chatId = getChatId(currentUser, currentChatUser);
+  if (chatId === "invalid_chat_id") {
+    alert("Invalid chat session.");
+    return;
+  }
+
+  const message = {
+    text: messageText,
+    sender: currentUser.displayName,
+    timestamp: Date.now(),
+  };
+
+  messagesRef.child(chatId).push(message)
+    .then(() => {
+      messageInput.value = "";
+    })
+    .catch((error) => {
+      console.error("❌ Message send error:", error);
+    });
 });
