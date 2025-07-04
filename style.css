@@ -337,6 +337,78 @@ body.dark-mode .contacts-list {
   cursor: pointer;
 }
 
+/* --- Responsive Styles for Mobile --- */
+
+@media (max-width: 768px) {
+
+  .chat-interface {
+    /* Allow child elements (sidebar, main-chat) to be positioned */
+    position: relative; 
+    overflow-x: hidden; /* Hide horizontal scrollbar */
+  }
+
+  .sidebar {
+    width: 100%;
+    height: 100%;
+    border-right: none; /* Remove border on mobile */
+    position: absolute;
+    /* This makes the sidebar slide in and out */
+    transition: transform 0.3s ease-in-out; 
+    z-index: 2; /* Ensure sidebar is on top by default */
+  }
+
+  .main-chat {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    /* Hide chat window by default by moving it to the right */
+    transform: translateX(100%); 
+    transition: transform 0.3s ease-in-out;
+    z-index: 3; /* Ensure chat is on top when active */
+  }
+
+  /* * NOTE: You need JavaScript to make the view switch work.
+   * When a user clicks a contact, add the class "mobile-view-chat" to the <div class="chat-interface">.
+   * When the user clicks the "back" button in the chat, remove that class.
+  */
+
+  /* When chat is active, slide sidebar out of view */
+  .chat-interface.mobile-view-chat .sidebar {
+    transform: translateX(-100%);
+  }
+
+  /* When chat is active, slide chat into view */
+  .chat-interface.mobile-view-chat .main-chat {
+    transform: translateX(0);
+  }
+
+  /* Adjust login form for smaller screens */
+  .login-container {
+    padding: 20px;
+    margin: 15px;
+    box-shadow: none; /* Remove shadow for a flatter look */
+    border-radius: 0;
+  }
+  
+  /* Adjustments for the chat header */
+  #chatPartnerAvatar {
+    width: 40px; /* Make avatar smaller */
+    height: 40px;
+  }
+
+  .chat-header h3 {
+    font-size: 1rem; /* Adjust font size */
+  }
+
+  /* Make chat bubbles wider to use space better */
+  .message {
+    max-width: 80%;
+  }
+  
+}
+
 .admin-controls button:hover {
   background-color: #c9302c;
 }
