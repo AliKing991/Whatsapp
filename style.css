@@ -340,7 +340,29 @@ body.dark-mode .contacts-list {
 /* --- Responsive Styles for Mobile --- */
 
 @media (max-width: 768px) {
+  .back-button {
+    display: none; 
+    background: none;
+    border: none;
+    color: var(--text-dark); /* Light mode mein text color */
+    font-size: 18px;
+    cursor: pointer;
+    padding-right: 15px;
+  }
+  
+  body.dark-mode .back-button {
+    color: var(--text-light); /* Dark mode mein text color */
+  }
 
+  /* Jab chat active ho, tab button ko dikhayein */
+  .chat-interface.mobile-view-chat .back-button {
+    display: block;
+  }
+  
+  .chat-interface.mobile-view-chat .chat-partner {
+    /* Thoda space adjust karein jab back button ho */
+    margin-left: -10px;
+  }
   .chat-interface {
     /* Allow child elements (sidebar, main-chat) to be positioned */
     position: relative; 
