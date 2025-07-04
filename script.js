@@ -257,3 +257,28 @@ document.getElementById("unsendBtn").addEventListener("click", async () => {
   });
   alert("⛔ Last message unsent.");
 });
+
+
+document.addEventListener('DOMContentLoaded', () => {
+
+  // Zaroori elements ko select karein
+  const chatInterface = document.querySelector('.chat-interface');
+  const contactsList = document.querySelector('.contacts-list');
+  const backButton = document.querySelector('#backToContactsBtn');
+
+  // Jab kisi contact par click ho (Event Delegation)
+  contactsList.addEventListener('click', (event) => {
+    // Check karein ki user ne ek contact item par hi click kiya hai
+    if (event.target.closest('li')) {
+      // mobile-view-chat class add karein taaki chat window dikhe
+      chatInterface.classList.add('mobile-view-chat');
+    }
+  });
+
+  // Jab Back Button par click ho
+  backButton.addEventListener('click', () => {
+    // mobile-view-chat class hata dein taaki contact list wapas aa jaye
+    chatInterface.classList.remove('mobile-view-chat');
+  });
+
+});
