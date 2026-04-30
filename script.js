@@ -89,9 +89,16 @@ await usersRef.child(name).set(currentUser);
 function loadUsers() {
   usersRef.on("value", snap => {
     usersList.innerHTML = "";
+
     snap.forEach(child => {
       const user = child.val();
+
+      // khud ko skip
       if (user.displayName === currentUser.displayName) return;
+
+      // 🔥 MAIN LOGIC
+      if (!isAdmin && user.role !== "admin") return;
+      // agar normal user hai → sirf admin dikhe
 
       const li = document.createElement("li");
       li.id = `user-${user.displayName}`;
@@ -100,14 +107,12 @@ function loadUsers() {
       statusRef.child(user.displayName).get().then(statusSnap => {
         const stat = statusSnap.val() || {};
         const online = stat.online;
-        const lastSeen = stat.lastSeen;
-        const minsAgo = lastSeen ? Math.floor((Date.now() - lastSeen) / 60000) : null;
 
         li.innerHTML = `
           ${user.displayName}
           <span class="status-dot ${online ? 'online' : 'offline'}"></span>
         `;
-        li.title = online ? "Online" : (minsAgo !== null ? `Last seen ${minsAgo} min ago` : "");
+
         usersList.appendChild(li);
       });
     });
