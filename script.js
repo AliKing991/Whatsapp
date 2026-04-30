@@ -46,10 +46,19 @@ submitUser.addEventListener("click", async () => {
   if (!name) return alert("Enter your name");
 
   if (role === "admin") {
-    if (pwd !== "Ali-sec") return alert("❌ Wrong admin password!");
-    isAdmin = true;
-    document.querySelector(".admin-controls").style.display = "flex";
-  }
+  if (pwd !== "Ali-sec") return alert("❌ Wrong admin password!");
+  isAdmin = true;
+  document.querySelector(".admin-controls").style.display = "flex";
+}
+
+// user save/update
+currentUser = { 
+  displayName: name, 
+  photoURL: "assets/unnamed.webp",
+  role: isAdmin ? "admin" : "user"
+};
+
+await usersRef.child(name).set(currentUser);
 
   const snap = await usersRef.child(name).get();
   if (snap.exists()) {
