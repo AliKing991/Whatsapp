@@ -85,6 +85,45 @@ await usersRef.child(name).set(currentUser);
   loadUsers();
 });
 
+//chat-search
+function openSearch() {
+  const box = document.getElementById("searchBox");
+  box.style.display = box.style.display === "block" ? "none" : "block";
+}
+
+function displayMessage(msg) {
+  const div = document.createElement("div");
+
+  div.className = "message " + (msg.sender === currentUser.displayName ? "outgoing" : "incoming");
+
+  div.setAttribute("data-text", msg.text.toLowerCase()); // 🔥 ye add karo
+
+  div.innerHTML = `
+    <p>${msg.text}</p>
+    <span>${new Date(msg.timestamp).toLocaleTimeString()} ✓✓</span>
+  `;
+
+  messagesContainer.appendChild(div);
+}
+function searchMessage() {
+  const query = document.getElementById("searchInput").value.toLowerCase();
+  const messages = document.querySelectorAll(".message");
+
+  let found = false;
+
+  messages.forEach(msg => {
+    msg.classList.remove("highlight");
+
+    if (!found && msg.dataset.text.includes(query)) {
+      msg.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      msg.classList.add("highlight");
+      found = true;
+    }
+  });
+
+  if (!found) alert("Message not found");
+}
 // LOAD USERS
 function loadUsers() {
   usersRef.on("value", snap => {
