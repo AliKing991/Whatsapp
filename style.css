@@ -10,41 +10,34 @@
   --bg-light: #f0f2f5;
   --bg-dark: #111;
 }
+
+/* HIGHLIGHT FOR SEARCH */
 .highlight {
   background: yellow;
   animation: blink 1s ease-in-out 2;
 }
 
 @keyframes blink {
-  0% { background: yellow; }
+  0%  { background: yellow; }
   50% { background: orange; }
-  100% { background: yellow; }
-}
-div.message.incoming::before {
-    position: absolute;
-    content: "";
-    z-index: 1;
-    display: flex;
-    border: 2px dotted #D6336C;
-    width: 100%;
-border-radius: 5px;
-    height: 100%;
-    left: 0;
-    top: 0;
+  100%{ background: yellow; }
 }
 
+/* FIX: Duplicate ::before removed — sirf ek rakha, sahi wala */
 div.message.incoming::before {
-    position: absolute;
-    content: "❤︎⁠";
-    z-index: 1;
-color: #FF4081;
-padding: 0px 10px;
-    display: flex;
-    width: 100%;
-    height: 100%;
-    left: -10px;
-    top: -10px;
+  position: absolute;
+  content: "❤︎⁠";
+  z-index: 1;
+  color: #FF4081;
+  padding: 0px 10px;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  left: -10px;
+  top: -10px;
 }
+
+/* BASE */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
@@ -69,6 +62,7 @@ body.dark-mode .contacts-list {
   color: var(--text-light);
 }
 
+/* APP CONTAINER */
 .app-container {
   display: flex;
   height: 100vh;
@@ -76,7 +70,6 @@ body.dark-mode .contacts-list {
 }
 
 /* LOGIN */
-
 .login-screen {
   display: flex;
   flex: 1;
@@ -88,7 +81,7 @@ body.dark-mode .contacts-list {
   background: #fff;
   padding: 40px;
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   text-align: center;
   max-width: 400px;
   width: 100%;
@@ -104,7 +97,6 @@ body.dark-mode .contacts-list {
 }
 
 /* PROFILE UPLOAD */
-
 .profile-upload {
   width: 120px;
   height: 120px;
@@ -126,7 +118,7 @@ body.dark-mode .contacts-list {
   position: absolute;
   bottom: 0;
   right: 0;
-  background-color: var(--whatsapp-accent);  
+  background-color: var(--whatsapp-accent);
   color: white;
   border-radius: 50%;
   padding: 2px 8px;
@@ -135,7 +127,6 @@ body.dark-mode .contacts-list {
 }
 
 /* BUTTONS */
-
 .whatsapp-btn {
   background-color: var(--whatsapp-primary);
   color: white;
@@ -151,15 +142,13 @@ body.dark-mode .contacts-list {
   background-color: var(--whatsapp-secondary);
 }
 
-/* INTERFACE LAYOUT */
-
+/* CHAT INTERFACE LAYOUT */
 .chat-interface {
   display: flex;
   height: 100vh;
 }
 
 /* SIDEBAR */
-
 .sidebar {
   width: 30%;
   border-right: 1px solid #ddd;
@@ -187,8 +176,7 @@ body.dark-mode .contacts-list {
   margin-right: 10px;
 }
 
-/* SEARCH */
-
+/* SEARCH BAR */
 .search-bar {
   padding: 10px;
   display: flex;
@@ -204,8 +192,7 @@ body.dark-mode .contacts-list {
   background: transparent;
 }
 
-/* CONTACT LIST */
-
+/* CONTACTS LIST */
 .contacts-list {
   flex: 1;
   overflow-y: auto;
@@ -216,37 +203,99 @@ body.dark-mode .contacts-list {
   padding: 10px;
   border-bottom: 1px solid #eee;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  list-style: none;
 }
 
 .contacts-list li:hover {
   background-color: #f5f5f5;
 }
 
-/* MAIN CHAT */
+/* FIX: Status dots add kiye — pehle CSS mein the hi nahi */
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-left: 8px;
+}
 
+.status-dot.online {
+  background-color: #25D366;
+}
+
+.status-dot.offline {
+  background-color: #aaa;
+}
+
+/* MAIN CHAT */
 .main-chat {
   flex: 1;
   display: flex;
   flex-direction: column;
+  /* FIX: position relative add kiya — chat-header absolute hai, isko parent chahiye */
+  position: relative;
 }
 
 /* CHAT HEADER */
-
 .chat-header {
-    position: absolute;
-    gap: 300px;
-    z-index: 5;
-    display: flex;
-    border-bottom-width: 1px;
-    border-color: var(--token-8a288cc6-5de2-44f4-ad7a-38f5d74baa34, rgb(227, 226, 226));
-    border-left-width: 1px;
-    border-right-width: 1px;
-    border-style: solid;
-    border-top-width: 1px;
-    backdrop-filter: blur(7px);
-    background-color: #ffffffcc;
-    width: 100%;
-    border-radius: 60px;
+  /* FIX: position absolute theek hai ab kyunki parent mein relative hai */
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  /* FIX: hardcoded gap: 300px hata diya — justify-content se space manage hoga */
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 16px;
+  border: 1px solid rgb(227, 226, 226);
+  border-radius: 60px;
+  backdrop-filter: blur(7px);
+  background-color: #ffffffcc;
+  box-sizing: border-box;
+}
+
+/* SEARCH BOX (message search) */
+#searchBox {
+  position: absolute;
+  top: 60px;
+  right: 10px;
+  z-index: 10;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+#searchBox input {
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  outline: none;
+}
+
+#searchBox button {
+  padding: 6px 12px;
+  background: var(--whatsapp-primary);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* CHAT PARTNER INFO */
+.chat-partner {
+  display: flex;
+  align-items: center;
+  flex: 1;
 }
 
 #chatPartnerAvatar {
@@ -256,19 +305,21 @@ body.dark-mode .contacts-list {
   margin-right: 10px;
 }
 
-/* MESSAGES */
-
+/* MESSAGES AREA */
 .message-area {
   flex: 1;
   overflow-y: auto;
   padding: 15px;
+  padding-top: 80px; /* FIX: header absolute hai toh messages uske neeche se shuru hon */
   background: var(--whatsapp-bg);
+  display: flex;
+  flex-direction: column;
 }
 
+/* MESSAGE BUBBLES */
 .message {
   max-width: 60%;
   padding: 10px;
-  
   margin-bottom: 10px;
   border-radius: 8px;
   position: relative;
@@ -276,14 +327,14 @@ body.dark-mode .contacts-list {
 }
 
 .incoming {
-color: #FF4081;
+  color: #FF4081;
   background: var(--message-in);
   align-self: flex-start;
 }
 
 .outgoing {
   color: #fff;
-margin-bottom: 20px;
+  margin-bottom: 20px;
   background: var(--message-out);
   align-self: flex-end;
 }
@@ -300,8 +351,7 @@ margin-bottom: 20px;
   color: #555;
 }
 
-/* COMPOSER */
-
+/* MESSAGE COMPOSER */
 .message-composer {
   display: flex;
   padding: 10px;
@@ -329,7 +379,6 @@ margin-bottom: 20px;
 }
 
 /* SETTINGS MENU */
-
 .settings-dropdown {
   position: relative;
 }
@@ -358,15 +407,13 @@ margin-bottom: 20px;
   background-color: #eee;
 }
 
-/* EDIT NAME */
-
+/* EDIT NAME BOX */
 #editNameBox {
   display: none;
   padding: 10px;
 }
 
 /* ADMIN CONTROLS */
-
 .admin-controls {
   padding: 10px;
   background: #ffe5e5;
@@ -382,63 +429,69 @@ margin-bottom: 20px;
   border-radius: 4px;
   cursor: pointer;
 }
- .chat-interface.mobile-view-chat .chat-partner {
-    /* Thoda space adjust karein jab back button ho */
-   
-    position: relative;
-    display: flex;
-  }
-/* --- Responsive Styles for Mobile --- */
 
+.admin-controls button:hover {
+  background-color: #c9302c;
+}
+
+/* MOBILE — chat partner spacing when back button visible */
+.chat-interface.mobile-view-chat .chat-partner {
+  position: relative;
+  display: flex;
+}
+
+/* --- RESPONSIVE MOBILE STYLES --- */
 @media (max-width: 768px) {
-  .chat-header{
-        max-height: 40px;
-        top: 10px;
-        gap: 11%;
+
+  .chat-header {
+    max-height: 60px;
+    top: 10px;
+    /* FIX: gap: 11% ki jagah flex se handle hoga */
+    gap: 8px;
   }
+
   .back-button {
-    display: none; 
-    padding: 10px 20px;
+    display: none;
+    padding: 6px 12px;
     height: 100%;
     border: 2px solid #e91e6352;
     color: #E91E63;
     border-radius: 10px;
     background: transparent;
-    width: 100%;
     font-size: 18px;
     cursor: pointer;
-  }
-  
-  body.dark-mode .back-button {
-    color: var(--text-light); /* Dark mode mein text color */
+    white-space: nowrap;
   }
 
-  /* Jab chat active ho, tab button ko dikhayein */
+  body.dark-mode .back-button {
+    color: var(--text-light);
+  }
+
+  /* Jab chat active ho tab back button dikhao */
   .chat-interface.mobile-view-chat .back-button {
     display: block;
   }
-  
+
   .chat-interface.mobile-view-chat .chat-partner {
-    /* Thoda space adjust karein jab back button ho */
     margin-left: -10px;
-        display: flex;
-        transform: scale(0.7);
-        align-items: center;
+    display: flex;
+    transform: scale(0.7);
+    align-items: center;
   }
+
+  /* Slide animation ke liye */
   .chat-interface {
-    /* Allow child elements (sidebar, main-chat) to be positioned */
-    position: relative; 
-    overflow-x: hidden; /* Hide horizontal scrollbar */
+    position: relative;
+    overflow-x: hidden;
   }
 
   .sidebar {
     width: 100%;
     height: 100%;
-    border-right: none; /* Remove border on mobile */
+    border-right: none;
     position: absolute;
-    /* This makes the sidebar slide in and out */
-    transition: transform 0.3s ease-in-out; 
-    z-index: 2; /* Ensure sidebar is on top by default */
+    transition: transform 0.3s ease-in-out;
+    z-index: 2;
   }
 
   .main-chat {
@@ -447,52 +500,45 @@ margin-bottom: 20px;
     position: absolute;
     top: 0;
     left: 0;
-    /* Hide chat window by default by moving it to the right */
-    transform: translateX(100%); 
+    transform: translateX(100%);
     transition: transform 0.3s ease-in-out;
-    z-index: 3; /* Ensure chat is on top when active */
+    z-index: 3;
   }
 
-  /* * NOTE: You need JavaScript to make the view switch work.
-   * When a user clicks a contact, add the class "mobile-view-chat" to the <div class="chat-interface">.
-   * When the user clicks the "back" button in the chat, remove that class.
-  */
-
-  /* When chat is active, slide sidebar out of view */
+  /* Contact se chat slide in */
   .chat-interface.mobile-view-chat .sidebar {
     transform: translateX(-100%);
   }
 
-  /* When chat is active, slide chat into view */
   .chat-interface.mobile-view-chat .main-chat {
     transform: translateX(0);
   }
 
-  /* Adjust login form for smaller screens */
+  /* Login form mobile */
   .login-container {
     padding: 20px;
     margin: 15px;
-    box-shadow: none; /* Remove shadow for a flatter look */
+    box-shadow: none;
     border-radius: 0;
   }
-  
-  /* Adjustments for the chat header */
+
+  /* Smaller avatar in header on mobile */
   #chatPartnerAvatar {
-    width: 40px; /* Make avatar smaller */
+    width: 40px;
     height: 40px;
   }
 
   .chat-header h3 {
-    font-size: 1rem; /* Adjust font size */
+    font-size: 1rem;
   }
 
-  /* Make chat bubbles wider to use space better */
+  /* Wider chat bubbles on mobile */
   .message {
     max-width: 80%;
   }
-  
-}
 
-.admin-controls button:hover {
-  background-color: #c9302c;
+  /* Messages area padding top thoda zyada mobile pe */
+  .message-area {
+    padding-top: 70px;
+  }
 }
