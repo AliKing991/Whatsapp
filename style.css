@@ -365,6 +365,9 @@ body.dark-mode .contacts-list {
 /* --- Responsive Styles for Mobile --- */
 
 @media (max-width: 768px) {
+  .chat-header{
+    max-height: 20px;
+  }
   .back-button {
     display: none; 
     background: none;
@@ -387,6 +390,9 @@ body.dark-mode .contacts-list {
   .chat-interface.mobile-view-chat .chat-partner {
     /* Thoda space adjust karein jab back button ho */
     margin-left: -10px;
+        display: flex;
+        transform: scale(0.7);
+        align-items: center;
   }
   .chat-interface {
     /* Allow child elements (sidebar, main-chat) to be positioned */
