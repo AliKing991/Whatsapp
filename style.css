@@ -383,7 +383,9 @@ margin-bottom: 20px;
 
 @media (max-width: 768px) {
   .chat-header{
-    max-height: 20px;
+        max-height: 40px;
+        top: 10px;
+        gap: 11%;
   }
   .back-button {
     display: none; 
