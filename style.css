@@ -224,12 +224,20 @@ body.dark-mode .contacts-list {
 /* CHAT HEADER */
 
 .chat-header {
-  padding: 15px;
-  border-bottom: 1px solid #ddd;
-  background: #f0f0f0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+    position: absolute;
+    gap: 300px;
+    z-index: 5;
+    display: flex;
+    border-bottom-width: 1px;
+    border-color: var(--token-8a288cc6-5de2-44f4-ad7a-38f5d74baa34, rgb(227, 226, 226));
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-style: solid;
+    border-top-width: 1px;
+    backdrop-filter: blur(7px);
+    background-color: #ffffffcc;
+    width: 100%;
+    border-radius: 60px;
 }
 
 #chatPartnerAvatar {
@@ -361,7 +369,12 @@ body.dark-mode .contacts-list {
   border-radius: 4px;
   cursor: pointer;
 }
-
+ .chat-interface.mobile-view-chat .chat-partner {
+    /* Thoda space adjust karein jab back button ho */
+   
+    position: relative;
+    display: flex;
+  }
 /* --- Responsive Styles for Mobile --- */
 
 @media (max-width: 768px) {
