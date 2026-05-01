@@ -123,7 +123,7 @@ function loadUsers() {
 function openChat(user) {
   currentChatUser = user;
   chatPartnerName.textContent = user.displayName;
-  chatPartnerAvatar.src = user.photoURL || "assets/unnamed.webp";
+  chatPartnerAvatar.src = user.photoURL || "assets/WhatsApp.png";
 
   statusRef.child(user.displayName).on("value", snap => {
     const st = snap.val() || {};
