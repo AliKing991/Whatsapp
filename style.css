@@ -2,9 +2,9 @@
   --whatsapp-primary: #128C7E;
   --whatsapp-secondary: #075E54;
   --whatsapp-accent: #25D366;
-  --whatsapp-bg: #e5ddd5;
+  --whatsapp-bg: #FFF5F8;
   --message-in: #ffffff;
-  --message-out: #dcf8c6;
+  --message-out: #FF4081;
   --text-dark: #111;
   --text-light: #eee;
   --bg-light: #f0f2f5;
@@ -273,6 +273,8 @@ color: #FF4081;
 }
 
 .outgoing {
+  color: #fff;
+margin-bottom: 20px;
   background: var(--message-out);
   align-self: flex-end;
 }
