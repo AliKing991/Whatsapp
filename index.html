@@ -44,6 +44,8 @@
 
     <!-- Chat Interface -->
     <div class="chat-interface" style="display: none;">
+
+      <!-- SIDEBAR -->
       <div class="sidebar">
         <div class="sidebar-header">
           <div class="user-profile">
@@ -72,31 +74,42 @@
           <i class="fas fa-search"></i>
           <input type="text" placeholder="Search or start new chat" />
         </div>
+
         <div class="contacts-list" id="users"></div>
       </div>
 
+      <!-- MAIN CHAT -->
       <div class="main-chat">
-   <div id="chatHeader" class="chat-header">
-  
-  <button id="backToContactsBtn" class="back-button"><i class="">⮜</i></button>
-  
-  <div class="chat-partner">
-    <img id="chatPartnerAvatar" src="assets/WhatsApp.png"/>
-    <div>
-      <h3 id="chatPartnerName">WhatsApp Web</h3>
-      <p class="status">Click on a contact to start chatting</p>
-    </div>
-  </div>
-     <div id="searchBox" style="display:none; position:absolute; top:10px; right:10px;">
-  <input type="text" id="searchInput" placeholder="Search message...">
-  <button onclick="searchMessage()">Find</button>
-</div>
-  <div class="chat-actions">
-   <button onclick="openSearch()" class="search">
-  <i class="fas fa-search"></i>
-</button>
-</div>
 
+        <!-- FIX: Chat header apni jagah, messages bahar — sahi structure -->
+        <div id="chatHeader" class="chat-header">
+
+          <button id="backToContactsBtn" class="back-button">
+            <i class="">⮜</i>
+          </button>
+
+          <div class="chat-partner">
+            <img id="chatPartnerAvatar" src="assets/WhatsApp.png"/>
+            <div>
+              <h3 id="chatPartnerName">WhatsApp Web</h3>
+              <p class="status">Click on a contact to start chatting</p>
+            </div>
+          </div>
+
+          <div class="chat-actions">
+            <button onclick="openSearch()" class="search">
+              <i class="fas fa-search"></i>
+            </button>
+          </div>
+
+        </div>
+        <!-- FIX: searchBox header ke baad, bahar rakha -->
+        <div id="searchBox" style="display:none;">
+          <input type="text" id="searchInput" placeholder="Search message...">
+          <button onclick="searchMessage()">Find</button>
+        </div>
+
+        <!-- FIX: messages div bilkul bahar header se, sahi jagah -->
         <div id="messages" class="message-area"></div>
 
         <div class="message-composer">
@@ -114,10 +127,12 @@
           <button id="deleteUserBtn">🗑 Delete User</button>
           <button id="unsendBtn">⛔ Unsend Last Msg</button>
         </div>
-      </div>
-    </div>
 
-  </div>
+      </div><!-- /main-chat -->
+
+    </div><!-- /chat-interface -->
+
+  </div><!-- /app-container -->
 
   <script src="script.js" defer></script>
 </body>
