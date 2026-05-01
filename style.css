@@ -10,7 +10,16 @@
   --bg-light: #f0f2f5;
   --bg-dark: #111;
 }
+.highlight {
+  background: yellow;
+  animation: blink 1s ease-in-out 2;
+}
 
+@keyframes blink {
+  0% { background: yellow; }
+  50% { background: orange; }
+  100% { background: yellow; }
+}
 div.message.incoming::before {
     position: absolute;
     content: "";
