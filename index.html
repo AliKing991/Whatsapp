@@ -87,9 +87,14 @@
       <p class="status">Click on a contact to start chatting</p>
     </div>
   </div>
+     <div id="searchBox" style="display:none; position:absolute; top:10px; right:10px;">
+  <input type="text" id="searchInput" placeholder="Search message...">
+  <button onclick="searchMessage()">Find</button>
+</div>
   <div class="chat-actions">
-    <button><i class="fas fa-search"></i></button>
-  </div>
+   <button onclick="openSearch()" class="search">
+  <i class="fas fa-search"></i>
+</button>
 </div>
 
         <div id="messages" class="message-area"></div>
