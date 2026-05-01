@@ -11,6 +11,31 @@
   --bg-dark: #111;
 }
 
+div.message.incoming::before {
+    position: absolute;
+    content: "";
+    z-index: 1;
+    display: flex;
+    border: 2px dotted #D6336C;
+    width: 100%;
+border-radius: 5px;
+    height: 100%;
+    left: 0;
+    top: 0;
+}
+
+div.message.incoming::before {
+    position: absolute;
+    content: "❤︎⁠";
+    z-index: 1;
+color: #FF4081;
+padding: 0px 10px;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    left: -10px;
+    top: -10px;
+}
 body {
   margin: 0;
   font-family: Arial, sans-serif;
